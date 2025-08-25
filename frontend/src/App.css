@@ -1,0 +1,19 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap");
+
+body {
+  background-color: rgb(247, 212, 148);
+  font-family: Roboto Condensed;
+}
+
+*::after,
+*::before {
+  box-sizing: border-box;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: black;
+}

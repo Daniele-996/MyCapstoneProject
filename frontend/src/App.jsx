@@ -1,11 +1,18 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Calendar from "./components/Calendar";
+import TopBar from "./components/TopBar";
 import "./App.css";
-import Title from "./components/title";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 function App() {
   return (
-    <>
-      <Title />
-    </>
+    <BrowserRouter>
+      <TopBar />
+      <Routes>
+        <Route path="/" element={<Calendar />} />
+        {/* altre route */}
+      </Routes>
+    </BrowserRouter>
   );
 }
 

@@ -2,22 +2,9 @@ import { useSelector, useDispatch } from "react-redux";
 import CalendarLib from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import { setDate } from "../redux/actions";
-import { Col, Container, Row, Table } from "react-bootstrap";
+import { Col, Container, Row } from "react-bootstrap";
 import { useState } from "react";
-
-const ROOMS = [
-  "Room 1",
-  "Room 2",
-  "Room 3",
-  "Room 4",
-  "Room 5",
-  "Room 6",
-  "Room 7",
-  "Room 8",
-  "Room 9",
-  "Room 10",
-];
-const HOURS = Array.from({ length: 15 }, (_, i) => `${8 + i}:00`);
+import TableRooms from "./TableRooms";
 
 const Calendar = () => {
   const dispatch = useDispatch();
@@ -56,26 +43,7 @@ const Calendar = () => {
                 day: "numeric",
               })}
           </h4>
-          <Table bordered responsive className="rounded">
-            <thead>
-              <tr>
-                <th>Ora</th>
-                {ROOMS.map((room) => (
-                  <th key={room}>{room}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {HOURS.map((hour) => (
-                <tr key={hour}>
-                  <td>{hour}</td>
-                  {ROOMS.map((room) => (
-                    <td key={room + hour}>-</td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </Table>
+          <TableRooms />
         </Container>
       )}
     </div>

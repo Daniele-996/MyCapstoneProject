@@ -11,13 +11,14 @@ public class Reservation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     @ManyToOne
-    @JoinColumn(name = "room_id")
+    @JoinColumn(name = "room_id", nullable = false)
     private Room room;
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
     private LocalDate date;
-    @OneToOne
+    @ManyToOne
+    @JoinColumn(name = "time_slot_id", nullable = false)
     private TimeSlot timeSlot;
 
     public Reservation() {

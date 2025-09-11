@@ -1,5 +1,6 @@
 package MyCapstoneProject.capstone.payloads;
 
+import MyCapstoneProject.capstone.enums.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
@@ -17,8 +18,8 @@ public record NewUserDTO(
         String email,
         @NotEmpty(message = "La password è obbligatoria!!")
         @Size(min = 6)
-        @Pattern(regexp = "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9]).{6,}$", message = "La password deve contenere almeno : 1 carattere minuscolo, 1 carattere maiuscolo, 1 carattere speciale ed 1 numero!")
+        @Pattern(regexp = "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{6,}$", message = "La password deve contenere almeno : 1 carattere minuscolo, 1 carattere maiuscolo, 1 carattere speciale ed 1 numero!")
         String password,
         @NotEmpty(message = "Inserisci il numero di telefono!")
-        String phone) {
+        String phone, Role role) {
 }

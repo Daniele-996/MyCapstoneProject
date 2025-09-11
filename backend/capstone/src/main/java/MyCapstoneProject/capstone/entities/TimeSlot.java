@@ -3,6 +3,8 @@ package MyCapstoneProject.capstone.entities;
 import jakarta.persistence.*;
 
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "time_slots")
@@ -15,6 +17,11 @@ public class TimeSlot {
     @Column(name = "end_time")
     private LocalTime endTime;
     private double price;
+    @ManyToOne
+    @JoinColumn(name = "room_id")
+    private Room room;
+    @OneToMany(mappedBy = "timeSlot")
+    private List<Reservation> reservations = new ArrayList<>();
 
     public TimeSlot() {
     }
@@ -53,4 +60,19 @@ public class TimeSlot {
         return id;
     }
 
+    public List<Reservation> getReservations() {
+        return reservations;
+    }
+
+    public void setReservations(List<Reservation> reservations) {
+        this.reservations = reservations;
+    }
+
+    public Room getRoom() {
+        return room;
+    }
+
+    public void setRoom(Room room) {
+        this.room = room;
+    }
 }

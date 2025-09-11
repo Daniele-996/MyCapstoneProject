@@ -2,8 +2,10 @@ package MyCapstoneProject.capstone.controllers;
 
 import MyCapstoneProject.capstone.entities.User;
 import MyCapstoneProject.capstone.exceptions.ValidationException;
+import MyCapstoneProject.capstone.payloads.AdminUpdateDTO;
 import MyCapstoneProject.capstone.payloads.NewUserDTO;
 import MyCapstoneProject.capstone.payloads.NewUserRespDTO;
+import MyCapstoneProject.capstone.payloads.UpdateUserDTO;
 import MyCapstoneProject.capstone.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -22,6 +24,7 @@ public class UserController {
 
     @GetMapping
     @PreAuthorize("hasAuthority('ADMIN')")
+    @ResponseStatus(HttpStatus.OK)
     public Page<User> findALl(@RequestParam(defaultValue = "0") int page,
                               @RequestParam(defaultValue = "10") int size,
                               @RequestParam(defaultValue = "id") String sortBy) {
@@ -29,16 +32,19 @@ public class UserController {
     }
 
     @GetMapping("/me")
+    @ResponseStatus(HttpStatus.OK)
     public User getOwnProfile(@AuthenticationPrincipal User currentAuthUser) {
         return currentAuthUser;
     }
 
     @PutMapping("/me")
-    public User updateOwnProfile(@AuthenticationPrincipal User currentAuthUser, @RequestBody @Validated NewUserDTO payload) {
-        return this.userService.findByIdAndUpdate(currentAuthUser.getId(), payload);
+    @ResponseStatus(HttpStatus.OK)
+    public User updateOwnProfile(@AuthenticationPrincipal User currentAuthUser, @RequestBody @Validated UpdateUserDTO payload) {
+        return this.userService.updateOwnProfile(currentAuthUser.getId(), payload);
     }
 
     @DeleteMapping("/me")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteOwnProfile(@AuthenticationPrincipal User currentAuthUser) {
         this.userService.findByIdAndDelete(currentAuthUser.getId());
     }
@@ -56,14 +62,16 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
     public User getById(@PathVariable long id) {
         return this.userService.findById(id);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public User getByIdAndUpdate(@PathVariable long id, @RequestBody NewUserDTO payload) {
-        return this.userService.findByIdAndUpdate(id, payload);
+    @ResponseStatus(HttpStatus.OK)
+    public User getByIdAndUpdate(@PathVariable long id, @RequestBody AdminUpdateDTO payload) {
+        return this.userService.updateUserByAdmin(id, payload);
     }
 
     @DeleteMapping("/{id}")

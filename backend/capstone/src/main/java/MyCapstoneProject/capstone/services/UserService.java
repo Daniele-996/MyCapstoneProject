@@ -3,7 +3,9 @@ package MyCapstoneProject.capstone.services;
 import MyCapstoneProject.capstone.entities.User;
 import MyCapstoneProject.capstone.exceptions.BadRequestException;
 import MyCapstoneProject.capstone.exceptions.NotFoundException;
+import MyCapstoneProject.capstone.payloads.AdminUpdateDTO;
 import MyCapstoneProject.capstone.payloads.NewUserDTO;
+import MyCapstoneProject.capstone.payloads.UpdateUserDTO;
 import MyCapstoneProject.capstone.repositories.UserRepo;
 import MyCapstoneProject.capstone.tools.MailgunSender;
 import org.slf4j.Logger;
@@ -16,7 +18,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 
 @Service
 public class UserService {
@@ -53,18 +54,42 @@ public class UserService {
         return this.userRepo.findById(id).orElseThrow(() -> new NotFoundException(id));
     }
 
-    public User findByIdAndUpdate(long id, NewUserDTO payload) {
+    public User updateOwnProfile(long id, UpdateUserDTO payload) {
         User found = this.findById(id);
-        if (!found.getEmail().equals(payload.email()))
+        if (payload.email() != null && !found.getEmail().equals(payload.email())) {
             this.userRepo.findByEmail(payload.email()).ifPresent(user -> {
                 throw new BadRequestException("L'email " + user.getEmail() + " è già in uso!");
             });
-        found.setFirstName(payload.firstName());
-        found.setLastName(payload.lastName());
-        found.setEmail(payload.email());
-        found.setPassword(bcrypt.encode(payload.password()));
+            found.setEmail(payload.email());
+        }
+        if (payload.firstName() != null) found.setFirstName(payload.firstName());
+        if (payload.lastName() != null) found.setLastName(payload.lastName());
+        if (payload.phone() != null) found.setPhone(payload.phone());
+        if (payload.password() != null && !payload.password().isBlank()) {
+            found.setPassword(bcrypt.encode(payload.password()));
+        }
         User modifiedUser = this.userRepo.save(found);
-        log.info("L'utente con id: " + found.getId() + " è stato modificato correttamente!");
+        log.info("L'utente con id: {} ha aggiornato il proprio profilo", found.getId());
+        return modifiedUser;
+    }
+
+    public User updateUserByAdmin(long id, AdminUpdateDTO payload) {
+        User found = this.findById(id);
+        if (payload.email() != null && !found.getEmail().equals(payload.email())) {
+            this.userRepo.findByEmail(payload.email()).ifPresent(user -> {
+                throw new BadRequestException("L'email " + user.getEmail() + " è già in uso!");
+            });
+            found.setEmail(payload.email());
+        }
+        if (payload.firstName() != null) found.setFirstName(payload.firstName());
+        if (payload.lastName() != null) found.setLastName(payload.lastName());
+        if (payload.phone() != null) found.setPhone(payload.phone());
+        if (payload.password() != null && !payload.password().isBlank()) {
+            found.setPassword(bcrypt.encode(payload.password()));
+        }
+        if (payload.role() != null) found.setRole(payload.role());
+        User modifiedUser = this.userRepo.save(found);
+        log.info("ADMIN ha aggiornato l'utente con id: {}", found.getId());
         return modifiedUser;
     }
 
@@ -76,6 +101,4 @@ public class UserService {
     public User findByEmail(String email) {
         return this.userRepo.findByEmail(email).orElseThrow(() -> new NotFoundException("L'utente con l'email: " + email + " non è stato trovato!"));
     }
-
-
 }

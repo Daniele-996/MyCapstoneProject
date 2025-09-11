@@ -23,6 +23,7 @@ public class AuthController {
     private UserService userService;
 
     @PostMapping("/login")
+    @ResponseStatus(HttpStatus.OK)
     public LoginResponseDTO login(@RequestBody LoginDTO body) {
         String accessToken = authService.checkCredentialsAndGenerateToken(body);
         return new LoginResponseDTO(accessToken);

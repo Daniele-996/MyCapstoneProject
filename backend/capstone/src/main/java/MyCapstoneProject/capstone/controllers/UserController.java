@@ -1,6 +1,7 @@
 package MyCapstoneProject.capstone.controllers;
 
 import MyCapstoneProject.capstone.entities.User;
+import MyCapstoneProject.capstone.enums.Role;
 import MyCapstoneProject.capstone.exceptions.ValidationException;
 import MyCapstoneProject.capstone.payloads.AdminUpdateDTO;
 import MyCapstoneProject.capstone.payloads.NewUserDTO;
@@ -15,6 +16,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -80,4 +83,22 @@ public class UserController {
     public void getByIdAndDelete(@PathVariable long id) {
         this.userService.findByIdAndDelete(id);
     }
+
+    @GetMapping("/search")
+    @ResponseStatus(HttpStatus.OK)
+    public List<User> searchUsers(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) Role role
+    ) {
+        if (q != null && role != null) {
+            return userService.searchByNameAndRole(q, role);
+        } else if (q != null) {
+            return userService.searchByName(q);
+        } else if (role != null) {
+            return userService.getByRole(role);
+        } else {
+            return userService.findAll();
+        }
+    }
+
 }

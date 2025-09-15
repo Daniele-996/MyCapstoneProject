@@ -6,6 +6,7 @@ import MyCapstoneProject.capstone.payloads.ReservationDTO;
 import MyCapstoneProject.capstone.services.ReservationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,7 +45,35 @@ public class ReservationController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasAuthority('ADMIN')")
     public void deleteReservation(@PathVariable Long id) {
         reservationService.deleteReservation(id);
     }
+
+    @GetMapping("/search")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Reservation> searchReservations(
+            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) Long roomId,
+            @RequestParam(required = false) String date
+    ) {
+        if (userId != null && roomId != null && date != null) {
+            return reservationService.findByUserAndRoomAndDate(userId, roomId, LocalDate.parse(date));
+        } else if (userId != null && roomId != null) {
+            return reservationService.findByUserAndRoom(userId, roomId);
+        } else if (userId != null && date != null) {
+            return reservationService.findByUserAndDate(userId, LocalDate.parse(date));
+        } else if (roomId != null && date != null) {
+            return reservationService.findByRoomAndDate(roomId, LocalDate.parse(date));
+        } else if (userId != null) {
+            return reservationService.findByUser(userId);
+        } else if (roomId != null) {
+            return reservationService.findByRoom(roomId);
+        } else if (date != null) {
+            return reservationService.findByDate(LocalDate.parse(date));
+        } else {
+            return reservationService.getAllReservation();
+        }
+    }
+
 }

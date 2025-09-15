@@ -70,7 +70,10 @@ const Home = () => {
   };
 
   return (
-    <Container className="p-4">
+    <Container
+      className="p-4 justify-content-center"
+      style={{ maxWidth: "700px" }}
+    >
       <h2>Benvenuto nel tuo spazio di lavoro!</h2>
 
       <ToggleButtonGroup

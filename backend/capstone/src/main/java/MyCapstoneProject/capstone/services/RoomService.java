@@ -37,5 +37,18 @@ public class RoomService {
     }
 
     public void deleteRoom(Long id) {
+        roomRepo.deleteById(id);
+    }
+
+    public List<Room> getRoomsByOrthopedicBed(OrthopedicBed bed) {
+        return roomRepo.findByOrthopedicBed(bed);
+    }
+
+    public List<Room> searchRoomsByName(String query) {
+        return roomRepo.findByNameRoomContainingIgnoreCase(query);
+    }
+
+    public List<Room> searchByNameAndBed(String name, OrthopedicBed bed) {
+        return roomRepo.findByNameRoomContainingIgnoreCaseAndOrthopedicBed(name, bed);
     }
 }

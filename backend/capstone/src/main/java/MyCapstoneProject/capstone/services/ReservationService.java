@@ -38,6 +38,14 @@ public class ReservationService {
         return reservationRepo.save(reservation);
     }
 
+    public List<Reservation> getReservationsByUser(Long userId) {
+        return reservationRepo.findByUserId(userId);
+    }
+
+    public List<Reservation> getReservationsByRoomAndDate(Long roomId, LocalDate date) {
+        return reservationRepo.findByRoomIdAndDate(roomId, date);
+    }
+
     public List<Reservation> getAllReservation() {
         return reservationRepo.findAll();
     }
@@ -49,4 +57,33 @@ public class ReservationService {
     public void deleteReservation(Long id) {
         reservationRepo.deleteById(id);
     }
+
+    public List<Reservation> findByUserAndRoomAndDate(Long userId, Long roomId, LocalDate date) {
+        return reservationRepo.findByUserIdAndRoomIdAndDate(userId, roomId, date);
+    }
+
+    public List<Reservation> findByUserAndRoom(Long userId, Long roomId) {
+        return reservationRepo.findByUserIdAndRoomId(userId, roomId);
+    }
+
+    public List<Reservation> findByUserAndDate(Long userId, LocalDate date) {
+        return reservationRepo.findByUserIdAndDate(userId, date);
+    }
+
+    public List<Reservation> findByRoomAndDate(Long roomId, LocalDate date) {
+        return reservationRepo.findByRoomIdAndDate(roomId, date);
+    }
+
+    public List<Reservation> findByUser(Long userId) {
+        return reservationRepo.findByUserId(userId);
+    }
+
+    public List<Reservation> findByRoom(Long roomId) {
+        return reservationRepo.findByRoomId(roomId);
+    }
+
+    public List<Reservation> findByDate(LocalDate date) {
+        return reservationRepo.findByDate(date);
+    }
+
 }

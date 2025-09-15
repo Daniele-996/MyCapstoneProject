@@ -1,6 +1,7 @@
 package MyCapstoneProject.capstone.services;
 
 import MyCapstoneProject.capstone.entities.User;
+import MyCapstoneProject.capstone.enums.Role;
 import MyCapstoneProject.capstone.exceptions.BadRequestException;
 import MyCapstoneProject.capstone.exceptions.NotFoundException;
 import MyCapstoneProject.capstone.payloads.AdminUpdateDTO;
@@ -18,6 +19,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class UserService {
@@ -55,41 +58,41 @@ public class UserService {
     }
 
     public User updateOwnProfile(long id, UpdateUserDTO payload) {
-        User found = this.findById(id);
-        if (payload.email() != null && !found.getEmail().equals(payload.email())) {
+        User foundByUser = this.findById(id);
+        if (payload.email() != null && !foundByUser.getEmail().equals(payload.email())) {
             this.userRepo.findByEmail(payload.email()).ifPresent(user -> {
                 throw new BadRequestException("L'email " + user.getEmail() + " è già in uso!");
             });
-            found.setEmail(payload.email());
+            foundByUser.setEmail(payload.email());
         }
-        if (payload.firstName() != null) found.setFirstName(payload.firstName());
-        if (payload.lastName() != null) found.setLastName(payload.lastName());
-        if (payload.phone() != null) found.setPhone(payload.phone());
+        if (payload.firstName() != null) foundByUser.setFirstName(payload.firstName());
+        if (payload.lastName() != null) foundByUser.setLastName(payload.lastName());
+        if (payload.phone() != null) foundByUser.setPhone(payload.phone());
         if (payload.password() != null && !payload.password().isBlank()) {
-            found.setPassword(bcrypt.encode(payload.password()));
+            foundByUser.setPassword(bcrypt.encode(payload.password()));
         }
-        User modifiedUser = this.userRepo.save(found);
-        log.info("L'utente con id: {} ha aggiornato il proprio profilo", found.getId());
+        User modifiedUser = this.userRepo.save(foundByUser);
+        log.info("L'utente con id: {} ha aggiornato il proprio profilo", foundByUser.getId());
         return modifiedUser;
     }
 
     public User updateUserByAdmin(long id, AdminUpdateDTO payload) {
-        User found = this.findById(id);
-        if (payload.email() != null && !found.getEmail().equals(payload.email())) {
+        User foundByAdmin = this.findById(id);
+        if (payload.email() != null && !foundByAdmin.getEmail().equals(payload.email())) {
             this.userRepo.findByEmail(payload.email()).ifPresent(user -> {
                 throw new BadRequestException("L'email " + user.getEmail() + " è già in uso!");
             });
-            found.setEmail(payload.email());
+            foundByAdmin.setEmail(payload.email());
         }
-        if (payload.firstName() != null) found.setFirstName(payload.firstName());
-        if (payload.lastName() != null) found.setLastName(payload.lastName());
-        if (payload.phone() != null) found.setPhone(payload.phone());
+        if (payload.firstName() != null) foundByAdmin.setFirstName(payload.firstName());
+        if (payload.lastName() != null) foundByAdmin.setLastName(payload.lastName());
+        if (payload.phone() != null) foundByAdmin.setPhone(payload.phone());
         if (payload.password() != null && !payload.password().isBlank()) {
-            found.setPassword(bcrypt.encode(payload.password()));
+            foundByAdmin.setPassword(bcrypt.encode(payload.password()));
         }
-        if (payload.role() != null) found.setRole(payload.role());
-        User modifiedUser = this.userRepo.save(found);
-        log.info("ADMIN ha aggiornato l'utente con id: {}", found.getId());
+        if (payload.role() != null) foundByAdmin.setRole(payload.role());
+        User modifiedUser = this.userRepo.save(foundByAdmin);
+        log.info("ADMIN ha aggiornato l'utente con id: {}", foundByAdmin.getId());
         return modifiedUser;
     }
 
@@ -100,5 +103,21 @@ public class UserService {
 
     public User findByEmail(String email) {
         return this.userRepo.findByEmail(email).orElseThrow(() -> new NotFoundException("L'utente con l'email: " + email + " non è stato trovato!"));
+    }
+
+    public List<User> getByRole(Role role) {
+        return userRepo.findByRole(role);
+    }
+
+    public List<User> searchByName(String query) {
+        return userRepo.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(query, query);
+    }
+
+    public List<User> searchByNameAndRole(String q, Role role) {
+        return userRepo.findByRoleAndFirstNameContainingIgnoreCaseOrRoleAndLastNameContainingIgnoreCase(role, q, role, q);
+    }
+
+    public List<User> findAll() {
+        return userRepo.findAll();
     }
 }

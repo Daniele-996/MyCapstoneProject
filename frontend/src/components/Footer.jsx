@@ -1,20 +1,27 @@
-function Footer() {
+import { Container } from "react-bootstrap";
+
+import Card from "react-bootstrap/Card";
+
+const Footer = () => {
   return (
-    <footer className="footer mt-2">
-      <p>© 2025 OFFICE RESERVATION - Tutti i diritti riservati</p>
-      <ul className="footer-contacts list-unstyled">
-        <li>
-          <strong>Telefono:</strong> +39 0123 456 789
-        </li>
-        <li>
-          <strong>Sede operativa:</strong> Via Roma 123, Roma
-        </li>
-        <li>
-          <strong>Sede legale:</strong> Corso Italia 45, Roma
-        </li>
-      </ul>
-    </footer>
+    <Container fluid className="text-center footer text-tertiary">
+      <Card.Header> - Tutti i diritti riservati - </Card.Header>
+      <Card.Body>
+        <Card.Title className="fs-6">
+          {" "}
+          • © 2025 OFFICE RESERVATION •{" "}
+        </Card.Title>
+        <Card.Text className="my-0">Telefono : +39 0123 456 789</Card.Text>
+        <Card.Text className="my-0">
+          Sede operativa : Via Roma 123, Roma
+        </Card.Text>
+        <Card.Text className="my-0">
+          Sede legale : Corso Italia 45, Roma
+        </Card.Text>
+      </Card.Body>
+      <Card.Footer className="text-white">Since 2025</Card.Footer>
+    </Container>
   );
-}
+};
 
 export default Footer;

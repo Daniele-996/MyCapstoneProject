@@ -141,7 +141,7 @@ const Home = () => {
           />
         </Form.Group>
 
-        <Button onClick={handleSubmit} variant="dark">
+        <Button onClick={handleSubmit} variant="light">
           {mode === "login" ? "Accedi" : "Registrati"}
         </Button>
       </Form>

@@ -14,18 +14,18 @@ function App() {
   return (
     <BrowserRouter>
       <TopBar />
-      <Container fluid className="app-container content">
-        <Container>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/calendar" element={<Calendar />} />
-            <Route path="/stanze" element={<Room />} />
-            <Route path="/profilo" element={<Profile />} />
-            <Route path="/users" element={<User />} />
-          </Routes>
-        </Container>
-        <Footer />
+      {/* <Container fluid className="app-container content"> */}
+      <Container>
+        <Routes>
+          {/* <Route path="/" element={<Home />} /> */}
+          <Route path="/calendar" element={<Calendar />} />
+          <Route path="/stanze" element={<Room />} />
+          <Route path="/profilo" element={<Profile />} />
+          <Route path="/users" element={<User />} />
+        </Routes>
       </Container>
+      <Footer />
+      {/* </Container> */}
     </BrowserRouter>
   );
 }

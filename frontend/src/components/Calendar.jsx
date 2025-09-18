@@ -3,50 +3,53 @@ import CalendarLib from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import { setDate } from "../redux/actions";
 import { Col, Container, Row } from "react-bootstrap";
-import { useState } from "react";
 import TableRooms from "./TableRooms";
+import { useLocation } from "react-router-dom";
 
 const Calendar = () => {
   const dispatch = useDispatch();
   const currentDate = useSelector((state) => state.calendar.currentDate);
-  const [selectedDate, setSelectedDate] = useState(null);
+  const location = useLocation();
 
   const handleChange = (date) => {
     const isoDate = date.toLocaleDateString("sv-SE");
     dispatch(setDate(isoDate));
-    setSelectedDate(isoDate);
   };
 
   return (
-    <div className="calendar-main">
-      <Container className="p-3 calendar-wrapper calendar-left">
-        <Row className="justify-content-center">
-          <Col className="text-center mx-3">
-            <CalendarLib
-              onChange={handleChange}
-              value={
-                currentDate ? new Date(currentDate + "T00:00:00") : new Date()
-              }
-              locale="it-IT"
-            />
-          </Col>
-        </Row>
-      </Container>
-      {selectedDate && (
-        <Container fluid className="calendar-table-wrapper">
-          <h4 className="m-2">
-            Disponibilità{" "}
-            {selectedDate &&
-              new Date(selectedDate).toLocaleDateString("it-IT", {
-                weekday: "long",
-                month: "long",
-                day: "numeric",
-              })}
-          </h4>
-          <TableRooms />
-        </Container>
-      )}
-    </div>
+    <Container fluid className="py-4">
+      <Row>
+        <Col
+          lg={12}
+          md={12}
+          sm={12}
+          className="mb-4 d-flex justify-content-center"
+        >
+          <CalendarLib
+            onChange={handleChange}
+            value={
+              currentDate ? new Date(currentDate + "T00:00:00") : new Date()
+            }
+            locale="it-IT"
+          />
+        </Col>
+        <Col lg={8} md={7} sm={12}>
+          {currentDate && location.pathname !== "/rooms" && (
+            <>
+              <h4 className="mb-3 text-center text-md-start">
+                Disponibilità{" "}
+                {new Date(currentDate).toLocaleDateString("it-IT", {
+                  weekday: "long",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </h4>
+              <TableRooms />
+            </>
+          )}
+        </Col>
+      </Row>
+    </Container>
   );
 };
 

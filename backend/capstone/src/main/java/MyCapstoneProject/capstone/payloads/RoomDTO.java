@@ -1,6 +1,7 @@
 package MyCapstoneProject.capstone.payloads;
 
-import MyCapstoneProject.capstone.enums.OrthopedicBed;
 
-public record RoomDTO(String nameRoom, OrthopedicBed orthopedicBed) {
+import java.util.List;
+
+public record RoomDTO(Long id, String nameRoom, String orthopedicBed, List<TimeSlotDTO> timeSlots) {
 }

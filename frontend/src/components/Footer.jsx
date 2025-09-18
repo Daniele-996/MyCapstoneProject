@@ -4,7 +4,7 @@ import Card from "react-bootstrap/Card";
 
 const Footer = () => {
   return (
-    <Container fluid className="text-center footer text-tertiary">
+    <Container fluid className="p-0 text-center footer text-tertiary">
       <Card.Header> - Tutti i diritti riservati - </Card.Header>
       <Card.Body>
         <Card.Title className="fs-6">

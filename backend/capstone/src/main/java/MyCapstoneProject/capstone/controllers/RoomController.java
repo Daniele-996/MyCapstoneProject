@@ -1,6 +1,5 @@
 package MyCapstoneProject.capstone.controllers;
 
-import MyCapstoneProject.capstone.entities.Room;
 import MyCapstoneProject.capstone.enums.OrthopedicBed;
 import MyCapstoneProject.capstone.payloads.NewRoomDTO;
 import MyCapstoneProject.capstone.payloads.RoomDTO;
@@ -12,39 +11,31 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/rooms")
 public class RoomController {
+
     @Autowired
     private RoomService roomService;
-
-    private RoomDTO mapToDTO(Room room) {
-        return new RoomDTO(room.getNameRoom(), room.getOrthopedicBed()
-        );
-    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAuthority('ADMIN')")
     public RoomDTO createRoom(@RequestBody @Validated NewRoomDTO request) {
-        Room room = roomService.createRoom(request.nameRoom(), request.orthopedicBed());
-        return mapToDTO(room);
+        return roomService.createRoom(request.nameRoom(), request.orthopedicBed());
     }
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<RoomDTO> getAllRooms() {
-        return roomService.getAllRooms().stream()
-                .map(this::mapToDTO)
-                .collect(Collectors.toList());
+        return roomService.getAllRooms();
     }
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public RoomDTO getRoom(@PathVariable Long id) {
-        return mapToDTO(roomService.getRoomById(id));
+        return roomService.getRoomByIdDTO(id);
     }
 
     @DeleteMapping("/{id}")
@@ -56,7 +47,7 @@ public class RoomController {
 
     @GetMapping("/search")
     @ResponseStatus(HttpStatus.OK)
-    public List<Room> searchRooms(
+    public List<RoomDTO> searchRooms(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) OrthopedicBed bed
     ) {
@@ -70,5 +61,4 @@ public class RoomController {
             return roomService.getAllRooms();
         }
     }
-
 }

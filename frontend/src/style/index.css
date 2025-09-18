@@ -156,21 +156,6 @@ h6 {
   color: #c54a4a;
 }
 
-.calendar-main {
-  display: flex;
-  width: 100%;
-  min-height: 80vh;
-}
-
-.calendar-left {
-  max-width: 400px;
-}
-
-.calendar-table-wrapper {
-  margin-left: 32px;
-  flex: 1;
-}
-
 .footer {
   background-color: #00070e;
   color: white;
@@ -182,17 +167,12 @@ h6 {
 .app-container {
   display: flex;
   flex-direction: column;
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
   min-height: 100vh;
 }
+
 .content {
-  overflow-y: auto;
-  padding-bottom: 100px;
-  background: transparent;
-  position: relative;
   flex: 1;
+  padding-bottom: 2rem;
 }
 
 @media (max-width: 1200px) {

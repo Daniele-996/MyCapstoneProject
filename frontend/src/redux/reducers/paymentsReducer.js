@@ -1,7 +1,7 @@
 import { SET_PAYMENTS } from "../actions";
 
 const initialState = {
-  list: [],
+  content: [],
 };
 
 const paymentsReducer = (state = initialState, action) => {

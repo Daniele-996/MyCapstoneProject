@@ -31,6 +31,15 @@ const Calendar = () => {
               currentDate ? new Date(currentDate + "T00:00:00") : new Date()
             }
             locale="it-IT"
+            tileClassName={({ date, view }) => {
+              if (
+                view === "month" &&
+                (date.getDay() === 0 || date.getDay() === 6)
+              ) {
+                return "weekend-day";
+              }
+              return null;
+            }}
           />
         </Col>
         <Col lg={8} md={7} sm={12}>

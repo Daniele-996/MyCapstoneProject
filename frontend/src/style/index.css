@@ -9,11 +9,13 @@ html {
 body {
   background: linear-gradient(
     to bottom,
-    rgb(87, 228, 209),
-    rgb(50, 180, 170),
-    rgb(20, 90, 100)
+    rgb(0, 0, 0),
+    rgb(14, 108, 105),
+    rgb(0, 255, 247),
+    rgb(14, 108, 105),
+    rgb(0, 0, 0)
   );
-  font-family: Roboto Condensed;
+  font-family: Roboto Condensed, sans-serif;
   min-height: 100vh;
   background-attachment: fixed;
 }
@@ -66,96 +68,108 @@ h6 {
 .logo-btn:focus {
   outline: 2px solid #02726c;
 }
-
-.calendar-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-}
-
-.calendar-centered {
-  margin-left: 20%;
-  margin-right: 20%;
-}
-
+/*------------------------- CALENDARIO -------------------------*/
 .react-calendar {
-  width: 100%;
-  max-width: 500px;
-  background-color: #a2f7e8;
-  border: 5px solid #000000;
+  background: #000000b8 !important;
+  border: none !important;
   border-radius: 12px;
-  padding: 10px;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  box-shadow: 0 20px 30px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  color: #fff !important;
+  font-family: "Roboto Condensed", sans-serif;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 .react-calendar__navigation {
-  background-color: #00070e;
-  color: rgb(255, 255, 255);
-  border-radius: 8px;
-  margin-bottom: 8px;
+  background: transparent;
+  margin-bottom: 1rem;
 }
 
 .react-calendar__navigation button {
-  background: none;
-  border: none;
-  color: rgb(255, 255, 255);
-  font-size: 1rem;
-  margin: 0 4px;
-  padding: 6px 12px;
-  cursor: pointer;
+  color: #fff;
+  font-weight: bold;
+  font-size: 1.2rem;
+  transition: 0.2s;
 }
 
 .react-calendar__navigation button:hover,
 .react-calendar__navigation button:active,
 .react-calendar__navigation button:focus {
-  background-color: #a2f7e8 !important;
-  color: #000000 !important;
-  outline: none;
-  box-shadow: none;
-  border-radius: 8px;
-  transition: background-color 0.2s, color 0.2s;
+  background: transparent !important;
+  color: #019893 !important;
 }
 
 .react-calendar__month-view__weekdays {
-  text-align: center;
-  font-weight: bold;
-  color: #000000;
-  margin-bottom: 6px;
+  color: #bbb !important;
 }
 
-.react-calendar__month-view__weekdays__weekday:hover {
-  background-color: #a2f7e8 !important;
-  color: #000000 !important;
+.react-calendar__month-view__days__day.weekend-day {
+  color: red !important;
+  font-weight: bold;
 }
 
 .react-calendar__tile--now {
-  background: #011a1b !important;
+  background: #019893 !important;
   color: #fff !important;
-  border-radius: 8px;
 }
 
 .react-calendar__tile {
-  border-radius: 8px;
-  transition: all 0.2s;
+  background: transparent !important;
+  color: #fff !important;
+  border-radius: 6px;
+  padding: 8px 0;
+  transition: background 0.2s, color 0.2s;
 }
 
 .react-calendar__tile:enabled:hover {
-  background-color: #09c074;
-  color: rgb(255, 255, 255);
-  transform: scale(1.1);
+  background: #000e0f9b !important;
+  color: #fff !important;
 }
 
 .react-calendar__tile--active {
-  background-color: #02726c !important;
-  color: white !important;
+  background: #019893 !important;
+  color: #fff !important;
 }
 
 .react-calendar__tile--neighboringMonth {
-  color: #c54a4a;
+  color: #666 !important;
 }
 
+/*------------------------- TABLE -------------------------*/
+.room-table {
+  background: #111;
+  color: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.room-table th {
+  background: #02726c;
+  color: #fff;
+  font-weight: bold;
+  text-align: center;
+}
+
+.room-table td {
+  background: #1a1a1a;
+  text-align: center;
+}
+
+.room-table tr:hover td {
+  background: #222;
+}
+
+.badge-available {
+  background: #09c074 !important;
+  font-size: 0.8rem;
+}
+
+.badge-unavailable {
+  background: #c54a4a !important;
+  font-size: 0.8rem;
+}
+
+/*------------------------- FOOTER -------------------------*/
 .footer {
   background-color: #00070e;
   color: white;
@@ -163,7 +177,7 @@ h6 {
   font-size: 0.5rem;
   margin-top: auto;
 }
-
+/*------------------------- LAYOUT -------------------------*/
 .app-container {
   display: flex;
   flex-direction: column;
@@ -175,6 +189,7 @@ h6 {
   padding-bottom: 2rem;
 }
 
+/*------------------------- RESPONSIVE -------------------------*/
 @media (max-width: 1200px) {
   .calendar-table-wrapper {
     margin-left: 16px;

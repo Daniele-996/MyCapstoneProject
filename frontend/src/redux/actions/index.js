@@ -50,13 +50,13 @@ export const loginUser = (email, password) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
+      const data = await resp.json();
       if (!resp.ok) {
-        const errData = await resp.json();
         throw new Error(
-          errData.message || "C'è stato un errore nell'effetuare il login"
+          data.message || "C'è stato un errore nell'effetuare il login"
         );
       }
-      const data = await resp.json();
+
       dispatch(setLogin(data.accessToken, email, password));
       localStorage.setItem("token", data.accessToken);
     } catch (err) {
@@ -69,16 +69,18 @@ export const registerUser = (formData) => {
   return async (dispatch) => {
     dispatch(clearError());
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.message || "Errore nella registrazione");
+      const resp = await fetch(
+        `${import.meta.env.VITE_API_URL}/auth/register`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        }
+      );
+      const data = await resp.json();
+      if (!resp.ok) {
+        throw new Error(data.message || "Errore nella registrazione");
       }
-      const data = await res.json();
 
       if (data.accessToken) {
         dispatch(setLogin(data.accessToken, formData.email, formData.password));
@@ -97,13 +99,13 @@ export const fetchRooms = () => {
     if (!token) return;
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/rooms`, {
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/rooms`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (!res.ok) throw new Error("Errore nel caricamento delle stanze");
+      if (!resp.ok) throw new Error("Errore nel caricamento delle stanze");
 
-      const data = await res.json();
+      const data = await resp.json();
       dispatch(setRooms(data));
     } catch (err) {
       dispatch(setError(err.message));
@@ -118,11 +120,11 @@ export const fetchPayments = () => {
     if (!token) return;
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/payments`, {
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/payments`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) throw new Error("Errore nel caricamento dei pagamenti");
-      const data = await res.json();
+      if (!resp.ok) throw new Error("Errore nel caricamento dei pagamenti");
+      const data = await resp.json();
       dispatch(setPayments(data));
     } catch (err) {
       dispatch(setError(err.message));
@@ -141,13 +143,14 @@ export const fetchReservations = (date) => {
         ? `${import.meta.env.VITE_API_URL}/reservations/search?date=${date}`
         : `${import.meta.env.VITE_API_URL}/reservations`;
 
-      const res = await fetch(url, {
+      const resp = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (!res.ok) throw new Error("Errore nel caricamento delle prenotazioni");
+      if (!resp.ok)
+        throw new Error("Errore nel caricamento delle prenotazioni");
 
-      const data = await res.json();
+      const data = await resp.json();
       dispatch(setReservations(data));
     } catch (err) {
       dispatch(setError(err.message));
@@ -162,13 +165,13 @@ export const fetchUserProfile = () => {
     if (!token) return;
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/users/me`, {
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/users/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (!res.ok) throw new Error("Errore nel caricamento del profilo");
+      if (!resp.ok) throw new Error("Errore nel caricamento del profilo");
 
-      const data = await res.json();
+      const data = await resp.json();
       dispatch(setUserProfile(data));
       localStorage.setItem("user", JSON.stringify(data));
     } catch (err) {

@@ -1,15 +1,7 @@
 import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchRooms, fetchReservations } from "../redux/actions";
-import {
-  Card,
-  Row,
-  Col,
-  ListGroup,
-  Badge,
-  Alert,
-  Spinner,
-} from "react-bootstrap";
+import { Table, Badge, Spinner, Alert } from "react-bootstrap";
 
 const TableRooms = () => {
   const dispatch = useDispatch();
@@ -27,19 +19,14 @@ const TableRooms = () => {
   useEffect(() => {
     if (token) {
       dispatch(fetchRooms());
-
-      if (currentDate) {
-        dispatch(fetchReservations(currentDate));
-      } else {
-        dispatch(fetchReservations());
-      }
+      dispatch(fetchReservations(currentDate || null));
     }
   }, [token, currentDate, dispatch]);
 
   if (loading) {
     return (
       <div className="d-flex justify-content-center align-items-center my-4">
-        <Spinner animation="border" variant="dark" />
+        <Spinner animation="border" variant="light" />
       </div>
     );
   }
@@ -48,60 +35,68 @@ const TableRooms = () => {
     return <Alert variant="danger">{errorMessage}</Alert>;
   }
 
+  // prendo tutte le fasce orarie (unione dei timeSlots di tutte le stanze)
+  const allSlots = Array.from(
+    new Set(
+      rooms.flatMap((room) =>
+        room.timeSlots
+          ? room.timeSlots.map((slot) => slot.startTime + "-" + slot.endTime)
+          : []
+      )
+    )
+  );
+
   return (
-    <Row xs={1} md={2} lg={3} className="g-4">
-      {rooms.map((room) => (
-        <Col key={room.id}>
-          <Card className="h-100 shadow-sm">
-            <Card.Body>
-              <Card.Title className="d-flex justify-content-between align-items-center">
-                {room.nameRoom}
-                <Badge
-                  bg={
-                    room.orthopedicBed === "AVAILABLE" ? "success" : "secondary"
+    <div className="table-responsive">
+      <Table bordered hover className="room-table text-center align-middle">
+        <thead>
+          <tr>
+            <th>Orario</th>
+            {rooms.map((room) => (
+              <th key={room.id}>{room.nameRoom}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {allSlots.map((slotRange) => {
+            const [start, end] = slotRange.split("-");
+            return (
+              <tr key={slotRange}>
+                <td>{start}</td>
+                {rooms.map((room) => {
+                  const slot = room.timeSlots?.find(
+                    (s) => s.startTime === start && s.endTime === end
+                  );
+
+                  if (!slot) {
+                    return <td key={room.id}>-</td>;
                   }
-                >
-                  {room.orthopedicBed}
-                </Badge>
-              </Card.Title>
 
-              <ListGroup variant="flush" className="mt-3">
-                {room.timeSlots && room.timeSlots.length > 0 ? (
-                  room.timeSlots.map((slot) => {
-                    const isReserved = reservations.some(
-                      (res) =>
-                        res.roomId === room.id &&
-                        (!currentDate || res.date === currentDate) &&
-                        res.timeSlotId === slot.id
-                    );
+                  const isReserved = reservations.some(
+                    (res) =>
+                      res.roomId === room.id &&
+                      res.timeSlotId === slot.id &&
+                      (!currentDate || res.date === currentDate)
+                  );
 
-                    return (
-                      <ListGroup.Item
-                        key={slot.id}
-                        className="d-flex justify-content-between align-items-center"
+                  return (
+                    <td key={room.id + slot.id}>
+                      <Badge
+                        className={
+                          isReserved ? "badge-unavailable" : "badge-available"
+                        }
                       >
-                        <span>
-                          {slot.startTime} - {slot.endTime}
-                        </span>
-                        <div>
-                          <Badge bg={isReserved ? "danger" : "success"}>
-                            {isReserved ? "OCCUPATA" : "DISPONIBILE"}
-                          </Badge>
-                        </div>
-                      </ListGroup.Item>
-                    );
-                  })
-                ) : (
-                  <ListGroup.Item className="text-center text-muted">
-                    Nessun orario disponibile
-                  </ListGroup.Item>
-                )}
-              </ListGroup>
-            </Card.Body>
-          </Card>
-        </Col>
-      ))}
-    </Row>
+                        {isReserved ? "OCCUPATA" : "DISPONIBILE"}
+                      </Badge>
+                    </td>
+                  );
+                })}
+              </tr>
+            );
+          })}
+        </tbody>
+      </Table>
+    </div>
   );
 };
 

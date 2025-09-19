@@ -1,7 +1,17 @@
 import { useState } from "react";
+import login from "../assets/login.png";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUserProfile, loginUser } from "../redux/actions";
-import { Container, Row, Col, Form, Button, Alert } from "react-bootstrap";
+import {
+  Container,
+  Row,
+  Col,
+  Form,
+  Button,
+  Alert,
+  Image,
+  Card,
+} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
 const FormLogin = () => {
@@ -26,43 +36,54 @@ const FormLogin = () => {
   };
 
   return (
-    <Container className="d-flex justify-content-center align-items-center min-vh-100">
-      <Row className="w-100">
-        <Col
-          md={{ span: 6, offset: 3 }}
-          className="p-4 rounded shadow bg-light"
-        >
-          <h2 className="text-center mb-4">Login</h2>
-          {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
-          <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3">
-              <Form.Label>Email</Form.Label>
-              <Form.Control
-                type="email"
-                name="email"
-                placeholder="Inserisci l'email"
-                value={form.email}
-                onChange={handleChange}
-                required
-              />
-            </Form.Group>
+    <Container className="d-flex justify-content-center align-items-center ">
+      <Row
+        className="d-flex justify-content-center"
+        style={{ maxWidth: "100%" }}
+      >
+        <Col xs={10} sm={8} md={6} className="my-3">
+          <Card className="new-dark text-white border-0">
+            <Card.Img variant="top" src={login} />
+            <Card.Body>
+              <Card.Title className="text-center">Login</Card.Title>
 
-            <Form.Group className="mb-3">
-              <Form.Label>Password</Form.Label>
-              <Form.Control
-                type="password"
-                name="password"
-                placeholder="Inserisci la password"
-                value={form.password}
-                onChange={handleChange}
-                required
-              />
-            </Form.Group>
+              <Form onSubmit={handleSubmit}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Email</Form.Label>
+                  <Form.Control
+                    type="email"
+                    name="email"
+                    placeholder="Inserisci l'email"
+                    value={form.email}
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
 
-            <Button variant="dark" type="submit" className="w-100">
-              Accedi
-            </Button>
-          </Form>
+                <Form.Group className="mb-3">
+                  <Form.Label>Password</Form.Label>
+                  <Form.Control
+                    type="password"
+                    name="password"
+                    placeholder="Inserisci la password"
+                    value={form.password}
+                    onChange={handleChange}
+                    required
+                  />
+                </Form.Group>
+
+                <Button variant="dark" type="submit" className="w-100">
+                  Accedi
+                </Button>
+              </Form>
+            </Card.Body>
+
+            {errorMessage && (
+              <Alert className="mx-3" variant="danger">
+                {errorMessage}
+              </Alert>
+            )}
+          </Card>
         </Col>
       </Row>
     </Container>

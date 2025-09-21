@@ -5,6 +5,7 @@ import MyCapstoneProject.capstone.entities.Room;
 import MyCapstoneProject.capstone.entities.TimeSlot;
 import MyCapstoneProject.capstone.entities.User;
 import MyCapstoneProject.capstone.exceptions.NotFoundException;
+import MyCapstoneProject.capstone.payloads.ReservationDTO;
 import MyCapstoneProject.capstone.repositories.ReservationRepo;
 import MyCapstoneProject.capstone.repositories.RoomRepo;
 import MyCapstoneProject.capstone.repositories.TimeSlotRepo;
@@ -26,64 +27,79 @@ public class ReservationService {
     @Autowired
     private UserRepo userRepo;
 
-    public Reservation createNewReservation(Long roomId, Long userId, LocalDate date, Long timeSlotId) {
-        Room room = roomRepo.findById(roomId).orElseThrow(() -> new NotFoundException("Stanza non trovata!!"));
-        User user = userRepo.findById(userId).orElseThrow(() -> new NotFoundException("Utente non trovato!!"));
-        TimeSlot timeSlot = timeSlotRepo.findById(timeSlotId).orElseThrow(() -> new NotFoundException("Orario non trovato!"));
+    private ReservationDTO mapToDTO(Reservation reservation) {
+        return new ReservationDTO(
+                reservation.getId(),
+                reservation.getRoom().getId(),
+                reservation.getUser().getId(),
+                reservation.getDate(),
+                reservation.getTimeSlot().getId()
+        );
+    }
+
+    public ReservationDTO createNewReservation(Long roomId, Long userId, LocalDate date, Long timeSlotId) {
+        Room room = roomRepo.findById(roomId)
+                .orElseThrow(() -> new NotFoundException("Stanza non trovata!!"));
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Utente non trovato!!"));
+        TimeSlot timeSlot = timeSlotRepo.findById(timeSlotId)
+                .orElseThrow(() -> new NotFoundException("Orario non trovato!!"));
+
         boolean exists = reservationRepo.existsByRoomAndDateAndTimeSlot(room, date, timeSlot);
         if (exists) {
             throw new RuntimeException("Questo orario non è disponibile per questa data!!");
         }
-        Reservation reservation = new Reservation(room, user, date, timeSlot);
-        return reservationRepo.save(reservation);
+
+        Reservation saved = reservationRepo.save(new Reservation(room, user, date, timeSlot));
+        return mapToDTO(saved);
     }
 
-    public List<Reservation> getReservationsByUser(Long userId) {
-        return reservationRepo.findByUserId(userId);
+    public List<ReservationDTO> getAllReservations() {
+        return reservationRepo.findAll().stream().map(this::mapToDTO).toList();
     }
 
-    public List<Reservation> getReservationsByRoomAndDate(Long roomId, LocalDate date) {
-        return reservationRepo.findByRoomIdAndDate(roomId, date);
-    }
-
-    public List<Reservation> getAllReservation() {
-        return reservationRepo.findAll();
-    }
-
-    public Reservation getReservationById(Long id) {
-        return reservationRepo.findById(id).orElseThrow(() -> new NotFoundException("Prenotazione non trovata!!"));
+    public ReservationDTO getReservationById(Long id) {
+        return reservationRepo.findById(id)
+                .map(this::mapToDTO)
+                .orElseThrow(() -> new NotFoundException("Prenotazione non trovata!!"));
     }
 
     public void deleteReservation(Long id) {
+        if (!reservationRepo.existsById(id)) {
+            throw new NotFoundException("Prenotazione non trovata!!");
+        }
         reservationRepo.deleteById(id);
     }
 
-    public List<Reservation> findByUserAndRoomAndDate(Long userId, Long roomId, LocalDate date) {
-        return reservationRepo.findByUserIdAndRoomIdAndDate(userId, roomId, date);
+    public List<ReservationDTO> findByDate(LocalDate date) {
+        return reservationRepo.findByDate(date).stream().map(this::mapToDTO).toList();
     }
 
-    public List<Reservation> findByUserAndRoom(Long userId, Long roomId) {
-        return reservationRepo.findByUserIdAndRoomId(userId, roomId);
+    public List<ReservationDTO> findByRoomAndDate(Long roomId, LocalDate date) {
+        return reservationRepo.findByRoomIdAndDate(roomId, date).stream().map(this::mapToDTO).toList();
     }
 
-    public List<Reservation> findByUserAndDate(Long userId, LocalDate date) {
-        return reservationRepo.findByUserIdAndDate(userId, date);
+    public List<ReservationDTO> findByUser(Long userId) {
+        return reservationRepo.findByUserId(userId).stream().map(this::mapToDTO).toList();
     }
 
-    public List<Reservation> findByRoomAndDate(Long roomId, LocalDate date) {
-        return reservationRepo.findByRoomIdAndDate(roomId, date);
+    public List<ReservationDTO> findByUserAndDate(Long userId, LocalDate date) {
+        return reservationRepo.findByUserIdAndDate(userId, date).stream().map(this::mapToDTO).toList();
     }
 
-    public List<Reservation> findByUser(Long userId) {
-        return reservationRepo.findByUserId(userId);
+    public List<ReservationDTO> findByUserAndRoom(Long userId, Long roomId) {
+        return reservationRepo.findByUserIdAndRoomId(userId, roomId).stream().map(this::mapToDTO).toList();
     }
 
-    public List<Reservation> findByRoom(Long roomId) {
-        return reservationRepo.findByRoomId(roomId);
+    public List<ReservationDTO> findByUserAndRoomAndDate(Long userId, Long roomId, LocalDate date) {
+        return reservationRepo.findByUserIdAndRoomIdAndDate(userId, roomId, date).stream().map(this::mapToDTO).toList();
     }
 
-    public List<Reservation> findByDate(LocalDate date) {
-        return reservationRepo.findByDate(date);
+    public List<ReservationDTO> findByRoomAndDateBetween(Long roomId, LocalDate from, LocalDate to) {
+        return reservationRepo
+                .findByRoomIdAndDateBetween(roomId, from, to)
+                .stream()
+                .map(this::mapToDTO) // converte in DTO
+                .toList();
     }
-
 }

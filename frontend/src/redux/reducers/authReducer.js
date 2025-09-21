@@ -17,10 +17,11 @@ const authReducer = (state = initialState, action) => {
       };
     case SET_LOGOUT:
       return {
-        state,
+        ...state,
         token: null,
-        email: "",
-        password: "",
+        email: null,
+        password: null,
+        role: null,
       };
     default:
       return state;

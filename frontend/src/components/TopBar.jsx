@@ -54,8 +54,10 @@ const TopBar = ({ toggleAside }) => {
                 variant="danger"
                 className="rounded mx-2 my-1"
                 onClick={() => {
+                  localStorage.removeItem("token");
+                  localStorage.removeItem("user");
                   dispatch(setLogout());
-                  navigate("/login");
+                  navigate("/");
                 }}
               >
                 Logout

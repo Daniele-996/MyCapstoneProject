@@ -26,15 +26,18 @@ const FormRegister = () => {
     phone: "",
   });
 
+  const [successMsg, setSuccessMsg] = useState("");
+
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await dispatch(registerUser(form));
-    const token = localStorage.getItem("token");
-    if (token) navigate("/rooms");
-    else navigate("/login");
+    const success = await dispatch(registerUser(form));
+    if (success) {
+      setSuccessMsg("Benvenuto! Ora puoi effettuare il login!");
+      setTimeout(() => navigate("/login"), 2200);
+    } else navigate("/register");
   };
 
   return (
@@ -55,6 +58,11 @@ const FormRegister = () => {
               {errorMessage && (
                 <Alert className="mx-3" variant="danger">
                   {errorMessage}
+                </Alert>
+              )}
+              {successMsg && (
+                <Alert className="mx-3" variant="success">
+                  {successMsg}
                 </Alert>
               )}
 

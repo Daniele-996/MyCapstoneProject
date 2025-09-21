@@ -5,10 +5,10 @@ import {
   Navigate,
 } from "react-router-dom";
 import { useSelector } from "react-redux";
+import Dashboard from "./components/Dashboard";
 import Room from "./components/Room";
 import FormLogin from "./components/FormLogin";
 import FormRegister from "./components/FormRegister";
-import Calendar from "./components/Calendar";
 import TopBar from "./components/TopBar";
 import Footer from "./components/Footer";
 import { Col, Container, Row } from "react-bootstrap";
@@ -16,9 +16,8 @@ import AsideMenu from "./components/AsideMenu";
 import { useState } from "react";
 
 const App = () => {
-  const token = useSelector((state) => state.auth.token);
-  const role = useSelector((state) => state.auth.role);
-
+  const token = useSelector((s) => s.auth.token);
+  const role = useSelector((s) => s.auth.role);
   const [showAside, setShowAside] = useState(false);
 
   return (
@@ -41,34 +40,25 @@ const App = () => {
               className="p-3 d-flex flex-column"
             >
               <Routes>
+                <Route path="/login" element={<FormLogin />} />
+                <Route path="/register" element={<FormRegister />} />
                 <Route
-                  path="/login"
-                  element={token ? <Navigate to="/rooms" /> : <FormLogin />}
-                />
-                <Route
-                  path="/register"
-                  element={token ? <Navigate to="/rooms" /> : <FormRegister />}
+                  path="/dashboard"
+                  element={token ? <Dashboard /> : <Navigate to="/login" />}
                 />
                 <Route
                   path="/rooms"
-                  element={token ? <Room /> : <Navigate to="/register" />}
-                />
-                <Route
-                  path="/calendar"
-                  element={token ? <Calendar /> : <Navigate to="/login" />}
+                  element={token ? <Room /> : <Navigate to="/login" />}
                 />
                 {role === "ADMIN" && (
-                  <>
-                    <Route
-                      path="/users"
-                      element={<div>Gestione utenti (solo admin)</div>}
-                    />
-                    <Route path="/stanze" element={<Room />} />
-                  </>
+                  <Route
+                    path="/users"
+                    element={<div>Gestione utenti (solo admin)</div>}
+                  />
                 )}
                 <Route
                   path="*"
-                  element={<Navigate to={token ? "/rooms" : "/login"} />}
+                  element={<Navigate to={token ? "/dashboard" : "/login"} />}
                 />
               </Routes>
             </Col>

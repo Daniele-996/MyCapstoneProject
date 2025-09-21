@@ -5,9 +5,12 @@ export const SET_DATE = "SET_DATE";
 export const SET_ERROR = "SET_ERROR";
 export const CLEAR_ERROR = "CLEAR_ERROR";
 export const SET_PAYMENTS = "SET_PAYMENTS";
-export const SET_RESERVATIONS = "SET_RESERVATIONS";
 export const SET_USER = "SET_USER";
+export const RESERVATIONS_REQUEST = "RESERVATIONS_REQUEST";
+export const RESERVATIONS_SUCCESS = "RESERVATIONS_SUCCESS";
+export const RESERVATIONS_FAILURE = "RESERVATIONS_FAILURE";
 
+//------------------------------ ACTION CREATORS ---------------------------------
 export const setRooms = (rooms) => ({ type: SET_ROOMS, payload: rooms });
 
 export const setLogin = (token, email, password) => ({
@@ -34,12 +37,21 @@ export const setPayments = (payments) => ({
   payload: payments,
 });
 
-export const setReservations = (reservations) => ({
-  type: SET_RESERVATIONS,
+export const setUserProfile = (user) => ({ type: SET_USER, payload: user });
+
+export const reservationsRequest = () => ({ type: RESERVATIONS_REQUEST });
+
+export const reservationsSuccess = (reservations) => ({
+  type: RESERVATIONS_SUCCESS,
   payload: reservations,
 });
 
-export const setUserProfile = (user) => ({ type: SET_USER, payload: user });
+export const reservationsFailure = (message) => ({
+  type: RESERVATIONS_FAILURE,
+  payload: message,
+});
+
+//------------------------------ ALL FETCHS ---------------------------------
 
 export const loginUser = (email, password) => {
   return async (dispatch) => {
@@ -59,6 +71,8 @@ export const loginUser = (email, password) => {
 
       dispatch(setLogin(data.accessToken, email, password));
       localStorage.setItem("token", data.accessToken);
+      const todayIso = new Date().toLocaleDateString("sv-SE");
+      dispatch(setDate(todayIso));
     } catch (err) {
       dispatch(setError(err.message));
     }
@@ -79,13 +93,11 @@ export const registerUser = (formData) => {
       );
       const data = await resp.json();
       if (!resp.ok) {
-        throw new Error(data.message || "Errore nella registrazione");
+        dispatch(setError(data.message || "Errore nella registrazione!"));
+        return false;
       }
 
-      if (data.accessToken) {
-        dispatch(setLogin(data.accessToken, formData.email, formData.password));
-        localStorage.setItem("token", data.accessToken);
-      }
+      if (data.id) return true;
     } catch (err) {
       dispatch(setError(err.message));
     }
@@ -134,7 +146,7 @@ export const fetchPayments = () => {
 
 export const fetchReservations = (date) => {
   return async (dispatch, getState) => {
-    dispatch(clearError());
+    dispatch(reservationsRequest());
     const token = getState().auth.token;
     if (!token) return;
 
@@ -151,9 +163,69 @@ export const fetchReservations = (date) => {
         throw new Error("Errore nel caricamento delle prenotazioni");
 
       const data = await resp.json();
-      dispatch(setReservations(data));
+      dispatch(reservationsSuccess(data));
     } catch (err) {
-      dispatch(setError(err.message));
+      dispatch(reservationsFailure(err.message));
+    }
+  };
+};
+
+export const fetchReservationsRange = (roomId, from, to) => {
+  return async (dispatch, getState) => {
+    dispatch(reservationsRequest());
+    const token = getState().auth.token;
+    if (!token) return;
+
+    try {
+      const url = `${
+        import.meta.env.VITE_API_URL
+      }/reservations/search?roomId=${roomId}&from=${from}&to=${to}`;
+
+      const resp = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!resp.ok) {
+        throw new Error(
+          "Errore nel caricamento delle prenotazioni settimanali"
+        );
+      }
+
+      const data = await resp.json();
+      dispatch(reservationsSuccess(data));
+    } catch (err) {
+      dispatch(reservationsFailure(err.message));
+    }
+  };
+};
+
+export const createReservation = ({ room, user, date, timeSlot }) => {
+  return async (dispatch, getState) => {
+    dispatch(reservationsRequest());
+    const token = getState().auth.token;
+    if (!token) return;
+
+    try {
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/reservations`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ room, user, date, timeSlot }),
+      });
+
+      const data = await resp.json();
+      if (!resp.ok)
+        throw new Error(data.message || "Errore nella prenotazione");
+
+      const currentDate = getState().calendar.currentDate;
+      await dispatch(fetchReservations(currentDate));
+
+      return true;
+    } catch (err) {
+      dispatch(reservationsFailure(err.message));
+      return false;
     }
   };
 };

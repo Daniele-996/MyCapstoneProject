@@ -136,27 +136,41 @@ h6 {
 
 /*------------------------- TABLE -------------------------*/
 .room-table {
-  background: #111;
-  color: #fff;
+  background: #11111178 !important;
+  color: #fff !important;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
-.room-table th {
-  background: #02726c;
-  color: #fff;
+.room-table thead th {
+  background: #02726c !important;
+  color: #fff !important;
   font-weight: bold;
   text-align: center;
+  white-space: nowrap;
 }
 
-.room-table td {
-  background: #1a1a1a;
+.room-table tbody td {
+  background: #01555c !important;
   text-align: center;
+  vertical-align: middle;
 }
 
-.room-table tr:hover td {
-  background: #222;
+.room-table tbody tr:hover > td {
+  background: #0f6b6f !important;
+}
+
+.room-table .time-col {
+  width: 110px;
+  min-width: 110px;
+  white-space: nowrap;
+  font-weight: 700;
+}
+
+.room-table .day-col {
+  min-width: 140px;
+  text-align: center;
 }
 
 .badge-available {
@@ -169,6 +183,13 @@ h6 {
   font-size: 0.8rem;
 }
 
+.room-select {
+  max-width: 180px;
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
 /*------------------------- FOOTER -------------------------*/
 .footer {
   background-color: #00070e;

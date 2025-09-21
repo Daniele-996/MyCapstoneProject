@@ -1,7 +1,7 @@
 import { SET_DATE } from "../actions";
 
 const initialState = {
-  currentDate: new Date().toISOString().split("T")[0],
+  currentDate: null,
 };
 
 const calendarReducer = (state = initialState, action) => {

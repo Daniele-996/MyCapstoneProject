@@ -2,63 +2,40 @@ import { useSelector, useDispatch } from "react-redux";
 import CalendarLib from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import { setDate } from "../redux/actions";
-import { Col, Container, Row } from "react-bootstrap";
-import TableRooms from "./TableRooms";
-import { useLocation } from "react-router-dom";
+
+const toLocalISO = (date) => {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+};
+
+const fromISOToLocalDate = (iso) => {
+  if (!iso) return new Date();
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y, m - 1, d);
+};
 
 const Calendar = () => {
   const dispatch = useDispatch();
-  const currentDate = useSelector((state) => state.calendar.currentDate);
-  const location = useLocation();
+  const currentDate = useSelector((s) => s.calendar.currentDate);
 
-  const handleChange = (date) => {
-    const isoDate = date.toLocaleDateString("sv-SE");
-    dispatch(setDate(isoDate));
+  const handleClickDay = (date) => {
+    const iso = toLocalISO(date);
+    dispatch(setDate(iso));
   };
 
   return (
-    <Container fluid className="py-4">
-      <Row>
-        <Col
-          lg={12}
-          md={12}
-          sm={12}
-          className="mb-4 d-flex justify-content-center"
-        >
-          <CalendarLib
-            onChange={handleChange}
-            value={
-              currentDate ? new Date(currentDate + "T00:00:00") : new Date()
-            }
-            locale="it-IT"
-            tileClassName={({ date, view }) => {
-              if (
-                view === "month" &&
-                (date.getDay() === 0 || date.getDay() === 6)
-              ) {
-                return "weekend-day";
-              }
-              return null;
-            }}
-          />
-        </Col>
-        <Col lg={8} md={7} sm={12}>
-          {currentDate && location.pathname !== "/rooms" && (
-            <>
-              <h4 className="mb-3 text-center text-md-start">
-                Disponibilità{" "}
-                {new Date(currentDate).toLocaleDateString("it-IT", {
-                  weekday: "long",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </h4>
-              <TableRooms />
-            </>
-          )}
-        </Col>
-      </Row>
-    </Container>
+    <CalendarLib
+      onClickDay={handleClickDay}
+      value={fromISOToLocalDate(currentDate)}
+      locale="it-IT"
+      tileClassName={({ date, view }) =>
+        view === "month" && (date.getDay() === 0 || date.getDay() === 6)
+          ? "weekend-day"
+          : null
+      }
+    />
   );
 };
 

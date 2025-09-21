@@ -1,6 +1,5 @@
 package MyCapstoneProject.capstone.controllers;
 
-import MyCapstoneProject.capstone.entities.Reservation;
 import MyCapstoneProject.capstone.payloads.NewReservationDTO;
 import MyCapstoneProject.capstone.payloads.ReservationDTO;
 import MyCapstoneProject.capstone.services.ReservationService;
@@ -12,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/reservations")
@@ -20,27 +18,27 @@ public class ReservationController {
     @Autowired
     private ReservationService reservationService;
 
-    private ReservationDTO mapToDTO(Reservation reservation) {
-        return new ReservationDTO(reservation.getId(), reservation.getRoom().getId(), reservation.getUser().getId(), reservation.getDate(), reservation.getTimeSlot().getId());
-    }
-
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ReservationDTO createReservation(@RequestBody @Validated NewReservationDTO request) {
-        Reservation reservation = reservationService.createNewReservation(request.roomId(), request.userId(), LocalDate.parse(request.date()), request.timeSlotId());
-        return mapToDTO(reservation);
+        return reservationService.createNewReservation(
+                request.roomId(),
+                request.userId(),
+                LocalDate.parse(request.date()),
+                request.timeSlotId()
+        );
     }
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<ReservationDTO> getAllReservation() {
-        return reservationService.getAllReservation().stream().map(this::mapToDTO).collect(Collectors.toList());
+    public List<ReservationDTO> getAllReservations() {
+        return reservationService.getAllReservations();
     }
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public ReservationDTO getReservation(@PathVariable Long id) {
-        return mapToDTO(reservationService.getReservationById(id));
+        return reservationService.getReservationById(id);
     }
 
     @DeleteMapping("/{id}")
@@ -52,12 +50,20 @@ public class ReservationController {
 
     @GetMapping("/search")
     @ResponseStatus(HttpStatus.OK)
-    public List<Reservation> searchReservations(
+    public List<ReservationDTO> searchReservations(
             @RequestParam(required = false) Long userId,
             @RequestParam(required = false) Long roomId,
-            @RequestParam(required = false) String date
+            @RequestParam(required = false) String date,
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to
     ) {
-        if (userId != null && roomId != null && date != null) {
+        if (roomId != null && from != null && to != null) {
+            return reservationService.findByRoomAndDateBetween(
+                    roomId,
+                    LocalDate.parse(from),
+                    LocalDate.parse(to)
+            );
+        } else if (userId != null && roomId != null && date != null) {
             return reservationService.findByUserAndRoomAndDate(userId, roomId, LocalDate.parse(date));
         } else if (userId != null && roomId != null) {
             return reservationService.findByUserAndRoom(userId, roomId);
@@ -67,13 +73,10 @@ public class ReservationController {
             return reservationService.findByRoomAndDate(roomId, LocalDate.parse(date));
         } else if (userId != null) {
             return reservationService.findByUser(userId);
-        } else if (roomId != null) {
-            return reservationService.findByRoom(roomId);
         } else if (date != null) {
             return reservationService.findByDate(LocalDate.parse(date));
         } else {
-            return reservationService.getAllReservation();
+            return reservationService.getAllReservations();
         }
     }
-
 }

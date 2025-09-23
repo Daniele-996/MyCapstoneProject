@@ -14,10 +14,12 @@ import Footer from "./components/Footer";
 import { Col, Container, Row } from "react-bootstrap";
 import AsideMenu from "./components/AsideMenu";
 import { useState } from "react";
+import Users from "./components/Users";
+import UserPayments from "./components/UserPayments";
+// import UserReservations from "./components/UserReservations";
 
 const App = () => {
   const token = useSelector((s) => s.auth.token);
-  const role = useSelector((s) => s.auth.role);
   const [showAside, setShowAside] = useState(false);
 
   return (
@@ -42,6 +44,11 @@ const App = () => {
               <Routes>
                 <Route path="/login" element={<FormLogin />} />
                 <Route path="/register" element={<FormRegister />} />
+                <Route path="/users/:id/payments" element={<UserPayments />} />
+                {/* <Route
+                  path="/users/:id/reservations"
+                  element={<UserReservations />}
+                /> */}
                 <Route
                   path="/dashboard"
                   element={token ? <Dashboard /> : <Navigate to="/login" />}
@@ -50,12 +57,7 @@ const App = () => {
                   path="/rooms"
                   element={token ? <Room /> : <Navigate to="/login" />}
                 />
-                {role === "ADMIN" && (
-                  <Route
-                    path="/users"
-                    element={<div>Gestione utenti (solo admin)</div>}
-                  />
-                )}
+                <Route path="/users" element={<Users />} />
                 <Route
                   path="*"
                   element={<Navigate to={token ? "/dashboard" : "/login"} />}

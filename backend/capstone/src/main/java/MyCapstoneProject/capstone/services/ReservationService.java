@@ -33,7 +33,8 @@ public class ReservationService {
                 reservation.getRoom().getId(),
                 reservation.getUser().getId(),
                 reservation.getDate(),
-                reservation.getTimeSlot().getId()
+                reservation.getTimeSlot().getId(),
+                reservation.getAmount()
         );
     }
 
@@ -49,8 +50,9 @@ public class ReservationService {
         if (exists) {
             throw new RuntimeException("Questo orario non è disponibile per questa data!!");
         }
+        double amount = timeSlot.getPrice();
 
-        Reservation saved = reservationRepo.save(new Reservation(room, user, date, timeSlot));
+        Reservation saved = reservationRepo.save(new Reservation(room, user, date, timeSlot, amount));
         return mapToDTO(saved);
     }
 

@@ -4,114 +4,218 @@ import {
   fetchRooms,
   fetchReservations,
   createReservation,
+  deleteReservation,
+  fetchUsers,
 } from "../redux/actions";
-import { Table, Badge, Spinner, Alert, Button } from "react-bootstrap";
+import { Table, Badge, Spinner, Alert, Button, Modal } from "react-bootstrap";
 
 const TableRooms = () => {
   const dispatch = useDispatch();
 
-  const rooms = useSelector((state) => state.rooms.content || []);
+  const rooms = useSelector((s) => s.rooms.content);
   const {
     content: reservations,
     loading,
     error,
-  } = useSelector((state) => state.reservations);
-  const currentDate = useSelector((state) => state.calendar.currentDate);
-  const token = useSelector((state) => state.auth.token);
-  const userId = useSelector((state) => state.user.id);
+  } = useSelector((s) => s.reservations);
+  const users = useSelector((s) => s.user.content);
+  const currentDate = useSelector((s) => s.calendar.currentDate);
+
+  const [storedUser, setStoredUser] = useState(null);
+  useEffect(() => {
+    const u = localStorage.getItem("user");
+    if (u) setStoredUser(JSON.parse(u));
+  }, []);
+
+  const userId = storedUser?.id;
+  const role = storedUser?.role || "USER";
+
   const [pendingReservation, setPendingReservation] = useState(null);
+  const [pendingDelete, setPendingDelete] = useState(null);
+  const [feedback, setFeedback] = useState(null);
+
+  useEffect(() => {
+    if (feedback) {
+      const timer = setTimeout(() => setFeedback(null), 2200);
+      return () => clearTimeout(timer);
+    }
+  }, [feedback]);
 
   const fixedSlots = rooms.length > 0 ? rooms[0].timeSlots : [];
 
   useEffect(() => {
-    if (token && rooms.length === 0) {
-      dispatch(fetchRooms());
-    }
-  }, [token, rooms.length, dispatch]);
+    dispatch(fetchRooms());
+  }, [dispatch]);
 
   useEffect(() => {
-    if (token && currentDate) {
-      dispatch(fetchReservations(currentDate));
+    if (!currentDate) return;
+    dispatch(fetchReservations(currentDate));
+    if (role === "ADMIN" && users.length === 0) {
+      dispatch(fetchUsers());
     }
-  }, [token, currentDate, dispatch]);
+  }, [currentDate, role, users.length, dispatch]);
+
+  const reservationsMap = {};
+  reservations
+    .filter((r) => r.date === currentDate)
+    .forEach((r) => {
+      reservationsMap[`${r.roomId}-${r.timeSlotId}`] = r;
+    });
+
+  const handleBadgeClick = (room, slot, reserved) => {
+    if (!reserved) {
+      setPendingReservation({ room, slot });
+    } else if (role === "ADMIN") {
+      const res = reservationsMap[`${room.id}-${slot.id}`];
+      if (res) setPendingDelete(res);
+    }
+  };
+
+  const confirmReservation = () => {
+    if (!pendingReservation || !userId) {
+      setFeedback({ type: "danger", message: "Impossibile prenotare." });
+      return;
+    }
+    dispatch(
+      createReservation({
+        roomId: pendingReservation.room.id,
+        userId,
+        date: currentDate,
+        timeSlotId: pendingReservation.slot.id,
+      })
+    )
+      .then(() => {
+        setFeedback({ type: "success", message: "Prenotazione avvenuta!" });
+        dispatch(fetchReservations(currentDate));
+      })
+      .catch(() =>
+        setFeedback({ type: "danger", message: "Errore nella prenotazione" })
+      );
+    setPendingReservation(null);
+  };
+
+  const confirmDelete = () => {
+    if (!pendingDelete) return;
+    dispatch(deleteReservation(pendingDelete.id))
+      .then(() => {
+        setFeedback({ type: "success", message: "Prenotazione eliminata!" });
+        dispatch(fetchReservations(currentDate));
+      })
+      .catch(() =>
+        setFeedback({
+          type: "danger",
+          message: "Errore durante l'eliminazione",
+        })
+      );
+    setPendingDelete(null);
+  };
+
+  const getDisplayLabel = (reservation) => {
+    if (!reservation) return "DISPONIBILE";
+    if (reservation.userId === userId) {
+      return storedUser?.lastName?.toUpperCase() || "TUO";
+    }
+    if (role === "ADMIN") {
+      return (
+        users
+          .find((u) => u.id === reservation.userId)
+          ?.lastName?.toUpperCase() || "OCCUPATA"
+      );
+    }
+    return "OCCUPATA";
+  };
 
   if (loading && !rooms.length) {
     return (
       <div className="d-flex justify-content-center align-items-center my-4">
-        <Spinner animation="border" variant="light" />
+        <Spinner animation="border" variant="dark" size="xl" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <Alert variant="danger" className="text-center">
+      <Alert variant="danger" className="text-center w-50 mx-auto">
         {error}
       </Alert>
     );
   }
 
-  const isReservedCell = (roomId, slotId) =>
-    reservations.some(
-      (res) =>
-        res.roomId === roomId &&
-        res.timeSlotId === slotId &&
-        res.date === currentDate
-    );
-
-  const handleCellClick = (room, slot) => {
-    if (!userId) return;
-    setPendingReservation({ room, slot });
-  };
-
-  const confirmReservation = () => {
-    if (!pendingReservation) return;
-    dispatch(
-      createReservation({
-        room: pendingReservation.room.id,
-        user: userId,
-        date: currentDate,
-        timeSlot: pendingReservation.slot.id,
-      })
-    );
-    setPendingReservation(null);
-  };
-
-  const cancelReservation = () => {
-    setPendingReservation(null);
-  };
-
   return (
     <div className="table-responsive">
-      {pendingReservation && (
+      {feedback && (
         <Alert
-          variant="info"
-          className="d-flex justify-content-between align-items-center"
+          variant={feedback.type}
+          dismissible
+          onClose={() => setFeedback(null)}
+          className="text-center w-50 mx-auto"
         >
-          <div>
-            Confermi la prenotazione per la stanza{" "}
-            <strong>{pendingReservation.room.nameRoom}</strong> il{" "}
-            <strong>{currentDate}</strong> dalle{" "}
-            <strong>{pendingReservation.slot.startTime}</strong> alle{" "}
-            <strong>{pendingReservation.slot.endTime}</strong>?
-          </div>
-          <div>
-            <Button
-              variant="success"
-              size="sm"
-              className="me-2"
-              onClick={confirmReservation}
-            >
-              Conferma
-            </Button>
-            <Button variant="secondary" size="sm" onClick={cancelReservation}>
-              Annulla
-            </Button>
-          </div>
+          {feedback.message}
         </Alert>
       )}
 
-      <Table bordered hover className="room-table text-center align-middle">
+      <Modal
+        show={!!pendingReservation}
+        onHide={() => setPendingReservation(null)}
+        centered
+        className="room-admin-container"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Conferma prenotazione</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {pendingReservation && (
+            <p>
+              Vuoi prenotare la stanza{" "}
+              <strong>{pendingReservation.room.nameRoom}</strong> il{" "}
+              <strong>
+                {new Date(currentDate).toLocaleDateString("it-IT", {
+                  weekday: "long",
+                  day: "numeric",
+                  month: "long",
+                })}
+              </strong>{" "}
+              dalle <strong>{pendingReservation.slot.startTime}</strong> alle{" "}
+              <strong>{pendingReservation.slot.endTime}</strong>?
+            </p>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => setPendingReservation(null)}
+          >
+            Annulla
+          </Button>
+          <Button variant="success" onClick={confirmReservation}>
+            Conferma
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <Modal
+        show={!!pendingDelete}
+        onHide={() => setPendingDelete(null)}
+        centered
+        className="room-admin-container"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Conferma eliminazione</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Sei sicuro di voler eliminare questa prenotazione?
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setPendingDelete(null)}>
+            Annulla
+          </Button>
+          <Button variant="danger" onClick={confirmDelete}>
+            Elimina
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <Table bordered className="room-table text-center align-middle">
         <thead>
           <tr>
             <th>Orario</th>
@@ -125,21 +229,33 @@ const TableRooms = () => {
             <tr key={slot.id}>
               <td>{`${slot.startTime} - ${slot.endTime}`}</td>
               {rooms.map((room) => {
-                const reserved = isReservedCell(room.id, slot.id);
+                const key = `${room.id}-${slot.id}`;
+                const reservation = reservationsMap[key];
+                const reserved = !!reservation;
+                const clickable = !reserved || (reserved && role === "ADMIN");
+                const isMine = reservation && reservation.userId === userId;
                 return (
-                  <td
-                    key={`${room.id}-${slot.id}`}
-                    className={!reserved ? "cell-clickable" : ""}
-                    onClick={
-                      !reserved ? () => handleCellClick(room, slot) : undefined
-                    }
-                  >
+                  <td key={key}>
                     <Badge
                       className={
-                        reserved ? "badge-unavailable" : "badge-available"
+                        !reserved
+                          ? "badge-available"
+                          : isMine
+                          ? "badge-secondary"
+                          : "badge-unavailable"
+                      }
+                      role={clickable ? "button" : undefined}
+                      style={{
+                        cursor: clickable ? "pointer" : "default",
+                        userSelect: "none",
+                      }}
+                      onClick={
+                        clickable
+                          ? () => handleBadgeClick(room, slot, reserved)
+                          : undefined
                       }
                     >
-                      {reserved ? "OCCUPATA" : "DISPONIBILE"}
+                      {getDisplayLabel(reservation)}
                     </Badge>
                   </td>
                 );

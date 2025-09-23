@@ -1,154 +1,171 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
-  Col,
-  Container,
-  Row,
+  Modal,
+  Button,
   Form,
-  Spinner,
-  Badge,
-  Table,
+  Container,
+  Alert,
+  Dropdown,
 } from "react-bootstrap";
-import { useSelector, useDispatch } from "react-redux";
-import { fetchRooms, fetchReservationsRange } from "../redux/actions";
-
-const toISO = (d) => {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-};
-
-const next7Days = (currentDateISO) => {
-  const [y, m, day] = currentDateISO.split("-").map(Number);
-  const start = new Date(y, m - 1, day);
-  return Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(start);
-    d.setDate(start.getDate() + i);
-    return d;
-  });
-};
+import { createRoom, deleteRoom } from "../redux/actions";
+import { Trash, Plus } from "react-bootstrap-icons";
 
 const Room = () => {
   const dispatch = useDispatch();
   const rooms = useSelector((s) => s.rooms.content);
-  const reservations = useSelector((s) => s.reservations.content);
-  const currentDate = useSelector((s) => s.calendar.currentDate);
-  const token = useSelector((s) => s.auth.token);
 
-  const [selectedRoom, setSelectedRoom] = useState(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
 
-  useEffect(() => {
-    if (token) {
-      dispatch(fetchRooms());
-    }
-  }, [token, dispatch]);
+  const [newRoomName, setNewRoomName] = useState("");
+  const [orthopedicBed, setOrthopedicBed] = useState("AVAILABLE");
+  const [roomToDelete, setRoomToDelete] = useState("");
 
-  useEffect(() => {
-    if (rooms.length > 0 && !selectedRoom) {
-      setSelectedRoom(rooms[0]);
-    }
-  }, [rooms, selectedRoom]);
+  const [alert, setAlert] = useState(null);
 
-  useEffect(() => {
-    if (selectedRoom && currentDate) {
-      const [y, m, d] = currentDate.split("-").map(Number);
-      const start = new Date(y, m - 1, d);
-      const end = new Date(start);
-      end.setDate(start.getDate() + 6);
-      dispatch(
-        fetchReservationsRange(selectedRoom.id, toISO(start), toISO(end))
-      );
-    }
-  }, [selectedRoom, currentDate, dispatch]);
+  const handleCreate = () => {
+    if (!newRoomName) return;
+    dispatch(createRoom({ nameRoom: newRoomName, orthopedicBed }));
+    setNewRoomName("");
+    setOrthopedicBed("AVAILABLE");
+    setShowCreate(false);
+    setAlert({ type: "info", message: "Stanza creata con successo!" });
+  };
 
-  if (!selectedRoom) {
-    return (
-      <div className="d-flex justify-content-center my-4">
-        <Spinner animation="border" />
-      </div>
-    );
-  }
-
-  const fixedSlots = selectedRoom.timeSlots || [];
-  const weekDays = next7Days(currentDate);
-
-  const isReserved = (slotId, dayISO) =>
-    reservations.some(
-      (res) =>
-        Number(res.roomId) === Number(selectedRoom.id) &&
-        Number(res.timeSlotId) === Number(slotId) &&
-        res.date === dayISO
-    );
+  const handleDelete = () => {
+    if (!roomToDelete) return;
+    dispatch(deleteRoom(roomToDelete));
+    setRoomToDelete("");
+    setShowDelete(false);
+    setAlert({ type: "info", message: "Stanza eliminata con successo!" });
+  };
 
   return (
-    <Container fluid className="p-3">
-      <Row className="mb-3">
-        <Col className="d-flex justify-content-center">
-          <Form.Select
-            size="md"
-            className="room-select bg-dark text-white border-0"
-            value={selectedRoom.id}
-            onChange={(e) =>
-              setSelectedRoom(
-                rooms.find((r) => r.id === Number(e.target.value))
-              )
-            }
-          >
-            {rooms.map((r) => (
-              <option key={r.id} value={r.id}>
-                {r.nameRoom}
-              </option>
-            ))}
-          </Form.Select>
-        </Col>
-      </Row>
+    <Container className="room-admin-container text-center">
+      <h3 className="mb-4">Gestione Stanze</h3>
 
-      <div className="table-responsive">
-        <Table className="room-table table table-bordered text-center align-middle">
-          <thead>
-            <tr>
-              <th className="time-col">Orario</th>
-              {weekDays.map((d) => (
-                <th key={toISO(d)} className="day-col">
-                  <div className="d-block">
-                    {d.toLocaleDateString("it-IT", { weekday: "short" })}
-                  </div>
-                  <div className="d-block">
-                    {d.toLocaleDateString("it-IT", {
-                      day: "numeric",
-                      month: "numeric",
-                    })}
-                  </div>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {fixedSlots.map((slot) => (
-              <tr key={slot.id}>
-                <td className="time-col">{`${slot.startTime} - ${slot.endTime}`}</td>
-                {weekDays.map((d) => {
-                  const iso = toISO(d);
-                  const reserved = isReserved(slot.id, iso);
-                  return (
-                    <td key={`${slot.id}-${iso}`} className="day-col">
-                      <Badge
-                        className={
-                          reserved
-                            ? "badge-unavailable w-100"
-                            : "badge-available w-100"
-                        }
-                      >
-                        {reserved ? "OCCUPATA" : "DISPONIBILE"}
-                      </Badge>
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      </div>
+      {alert && (
+        <Alert
+          variant={alert.type}
+          onClose={() => setAlert(null)}
+          dismissible
+          className="text-center"
+        >
+          {alert.message}
+        </Alert>
+      )}
+
+      <Button
+        variant="success"
+        className="me-3"
+        onClick={() => setShowCreate(true)}
+      >
+        <Plus /> Crea Stanza
+      </Button>
+
+      <Button variant="danger" onClick={() => setShowDelete(true)}>
+        <Trash /> Elimina Stanza
+      </Button>
+
+      <Modal
+        className="room-admin-container"
+        show={showCreate}
+        onHide={() => setShowCreate(false)}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Crea nuova stanza</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label>Nome stanza</Form.Label>
+              <Form.Control
+                type="text"
+                value={newRoomName}
+                onChange={(e) => setNewRoomName(e.target.value)}
+                placeholder="Inserisci nome stanza"
+              />
+            </Form.Group>
+
+            <Form.Group>
+              <Form.Label>Letto ortopedico</Form.Label>
+              <Dropdown>
+                <Dropdown.Toggle className="custom-dropdown w-100">
+                  {orthopedicBed === "AVAILABLE"
+                    ? "Disponibile"
+                    : "Non disponibile"}
+                </Dropdown.Toggle>
+                <Dropdown.Menu className="custom-dropdown-menu w-100">
+                  <Dropdown.Item onClick={() => setOrthopedicBed("AVAILABLE")}>
+                    Disponibile
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    onClick={() => setOrthopedicBed("NOT_AVAILABLE")}
+                  >
+                    Non disponibile
+                  </Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowCreate(false)}>
+            Annulla
+          </Button>
+          <Button variant="success" onClick={handleCreate}>
+            Crea
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <Modal
+        className="room-admin-container"
+        show={showDelete}
+        onHide={() => setShowDelete(false)}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Elimina stanza</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group>
+              <Form.Label>Seleziona stanza</Form.Label>
+              <Dropdown>
+                <Dropdown.Toggle className="custom-dropdown w-100">
+                  {roomToDelete
+                    ? rooms.find((r) => r.id === parseInt(roomToDelete))
+                        ?.nameRoom
+                    : "-- Seleziona --"}
+                </Dropdown.Toggle>
+                <Dropdown.Menu className="custom-dropdown-menu w-100">
+                  {rooms.map((room) => (
+                    <Dropdown.Item
+                      key={room.id}
+                      onClick={() => setRoomToDelete(room.id.toString())}
+                    >
+                      {room.nameRoom} ({room.orthopedicBed})
+                    </Dropdown.Item>
+                  ))}
+                </Dropdown.Menu>
+              </Dropdown>
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowDelete(false)}>
+            Annulla
+          </Button>
+          {roomToDelete && (
+            <Button variant="danger" onClick={handleDelete}>
+              Elimina
+            </Button>
+          )}
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 };

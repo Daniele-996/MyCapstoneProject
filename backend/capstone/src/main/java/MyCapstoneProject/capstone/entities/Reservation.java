@@ -20,15 +20,17 @@ public class Reservation {
     @ManyToOne
     @JoinColumn(name = "time_slot_id", nullable = false)
     private TimeSlot timeSlot;
+    private double amount;
 
     public Reservation() {
     }
 
-    public Reservation(Room room, User user, LocalDate date, TimeSlot timeSlot) {
+    public Reservation(Room room, User user, LocalDate date, TimeSlot timeSlot, double amount) {
         this.room = room;
         this.user = user;
         this.date = date;
         this.timeSlot = timeSlot;
+        this.amount = amount;
     }
 
     public Room getRoom() {
@@ -67,4 +69,11 @@ public class Reservation {
         return id;
     }
 
+    public double getAmount() {
+        return amount;
+    }
+
+    public void setAmount(double amount) {
+        this.amount = amount;
+    }
 }

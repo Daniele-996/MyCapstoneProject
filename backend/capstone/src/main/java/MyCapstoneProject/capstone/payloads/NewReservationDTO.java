@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 public record NewReservationDTO(
         @NotNull(message = "La stanza è obbligatoria")
         Long roomId,
-        @NotNull(message = "l'utente è obbligatorio")
+        @NotNull(message = "L'utente è obbligatorio")
         Long userId,
         @NotNull(message = "La data è obbligatoria")
         String date,

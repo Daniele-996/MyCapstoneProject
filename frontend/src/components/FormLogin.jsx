@@ -31,7 +31,7 @@ const FormLogin = () => {
     const token = localStorage.getItem("token");
     if (token) {
       await dispatch(fetchUserProfile());
-      navigate("/rooms");
+      navigate("/dashboard");
     }
   };
 

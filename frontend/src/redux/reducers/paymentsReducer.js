@@ -7,7 +7,7 @@ const initialState = {
 const paymentsReducer = (state = initialState, action) => {
   switch (action.type) {
     case SET_PAYMENTS:
-      return { ...state, list: action.paylaod };
+      return { ...state, content: action.paylaod };
     default:
       return state;
   }

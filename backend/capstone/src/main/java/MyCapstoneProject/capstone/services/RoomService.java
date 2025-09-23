@@ -45,7 +45,9 @@ public class RoomService {
     }
 
     public void deleteRoom(Long id) {
-        roomRepo.deleteById(id);
+        Room room = roomRepo.findById(id).orElseThrow(() -> new NotFoundException("Stanza non trovata"));
+        room.getTimeSlots().forEach(r -> r.setRoom(null));
+        roomRepo.deleteById(room.getId());
     }
 
     public List<RoomDTO> getRoomsByOrthopedicBed(OrthopedicBed bed) {

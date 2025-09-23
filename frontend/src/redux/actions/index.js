@@ -9,6 +9,9 @@ export const SET_USER = "SET_USER";
 export const RESERVATIONS_REQUEST = "RESERVATIONS_REQUEST";
 export const RESERVATIONS_SUCCESS = "RESERVATIONS_SUCCESS";
 export const RESERVATIONS_FAILURE = "RESERVATIONS_FAILURE";
+export const SETS_USERS = "SETS_USERS";
+export const UPDATE_USER_ROLE = "UPDATE_USER_ROLE";
+export const DELETE_USER = "DELETE_USER";
 
 //------------------------------ ACTION CREATORS ---------------------------------
 export const setRooms = (rooms) => ({ type: SET_ROOMS, payload: rooms });
@@ -50,6 +53,8 @@ export const reservationsFailure = (message) => ({
   type: RESERVATIONS_FAILURE,
   payload: message,
 });
+
+export const setUsers = (users) => ({ type: SETS_USERS, payload: users });
 
 //------------------------------ ALL FETCHS ---------------------------------
 
@@ -104,6 +109,128 @@ export const registerUser = (formData) => {
   };
 };
 
+export const fetchUsers = () => {
+  return async (dispatch) => {
+    dispatch(clearError());
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/users/search`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await resp.json();
+
+      if (!resp.ok)
+        throw new Error(data.message || "Errore nel caricamento utenti");
+
+      dispatch(setUsers(data));
+    } catch (err) {
+      dispatch(setError(err.message));
+    }
+  };
+};
+
+export const updateUserRole = (userId, newRole) => {
+  return async (dispatch) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const resp = await fetch(
+        `${import.meta.env.VITE_API_URL}/users/${userId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ role: newRole }),
+        }
+      );
+
+      if (!resp.ok) throw new Error("Errore nell'aggiornamento del ruolo");
+
+      const updatedUser = await resp.json();
+      dispatch({ type: UPDATE_USER_ROLE, payload: updatedUser });
+    } catch (err) {
+      dispatch(setError(err.message));
+    }
+  };
+};
+
+export const deleteUser = (userId) => {
+  return async (dispatch) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const resp = await fetch(
+        `${import.meta.env.VITE_API_URL}/users/${userId}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (!resp.ok) {
+        const data = await resp.json();
+        throw new Error(data.message || "Errore nell'eliminazione utente");
+      }
+
+      dispatch({ type: DELETE_USER, payload: userId });
+    } catch (err) {
+      dispatch(setError(err.message));
+    }
+  };
+};
+
+// export const fetchUserPayments = (userId) => {
+//   return async (dispatch) => {
+//     dispatch(clearError());
+//     const token = localStorage.getItem("token");
+//     if (!token) return;
+
+//     try {
+//       const resp = await fetch(
+//         `${import.meta.env.VITE_API_URL}/payments/search?userId=${userId}`,
+//         {
+//           headers: { Authorization: `Bearer ${token}` },
+//         }
+//       );
+//       if (!resp.ok) throw new Error("Errore nel caricamento pagamenti");
+
+//       const data = await resp.json();
+//       dispatch(setPayments(data));
+//     } catch (err) {
+//       dispatch(setError(err.message));
+//     }
+//   };
+// };
+
+// export const fetchUserReservations = (userId) => {
+//   return async (dispatch) => {
+//     dispatch(reservationsRequest());
+//     const token = localStorage.getItem("token");
+//     if (!token) return;
+
+//     try {
+//       const resp = await fetch(
+//         `${import.meta.env.VITE_API_URL}/reservations/search?userId=${userId}`,
+//         {
+//           headers: { Authorization: `Bearer ${token}` },
+//         }
+//       );
+//       if (!resp.ok) throw new Error("Errore nel caricamento prenotazioni");
+
+//       const data = await resp.json();
+//       dispatch(reservationsSuccess(data));
+//     } catch (err) {
+//       dispatch(reservationsFailure(err.message));
+//     }
+//   };
+// };
+
 export const fetchRooms = () => {
   return async (dispatch, getState) => {
     dispatch(clearError());
@@ -119,6 +246,58 @@ export const fetchRooms = () => {
 
       const data = await resp.json();
       dispatch(setRooms(data));
+    } catch (err) {
+      dispatch(setError(err.message));
+    }
+  };
+};
+
+export const createRoom = ({ nameRoom, orthopedicBed }) => {
+  return async (dispatch) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/rooms`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ nameRoom, orthopedicBed }),
+      });
+
+      if (!resp.ok) {
+        const errData = await resp.json();
+        throw new Error(
+          errData.message || "Errore nella creazione della stanza"
+        );
+      }
+
+      dispatch(fetchRooms());
+    } catch (err) {
+      dispatch(setError(err.message));
+    }
+  };
+};
+
+export const deleteRoom = (roomId) => {
+  return async (dispatch) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const resp = await fetch(
+        `${import.meta.env.VITE_API_URL}/rooms/${roomId}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (!resp.ok) throw new Error("Errore nell'eliminazione della stanza");
+
+      dispatch(fetchRooms());
     } catch (err) {
       dispatch(setError(err.message));
     }
@@ -144,28 +323,24 @@ export const fetchPayments = () => {
   };
 };
 
-export const fetchReservations = (date) => {
-  return async (dispatch, getState) => {
+export const fetchReservations = () => {
+  return async (dispatch) => {
     dispatch(reservationsRequest());
-    const token = getState().auth.token;
+    const token = localStorage.getItem("token");
     if (!token) return;
 
     try {
-      const url = date
-        ? `${import.meta.env.VITE_API_URL}/reservations/search?date=${date}`
-        : `${import.meta.env.VITE_API_URL}/reservations`;
-
-      const resp = await fetch(url, {
+      const resp = await fetch(`${import.meta.env.VITE_API_URL}/reservations`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (!resp.ok)
-        throw new Error("Errore nel caricamento delle prenotazioni");
-
       const data = await resp.json();
+      if (!resp.ok)
+        throw new Error(data.message || "Errore nel caricamento prenotazioni");
+
       dispatch(reservationsSuccess(data));
     } catch (err) {
-      dispatch(reservationsFailure(err.message));
+      dispatch(setError(err.message));
     }
   };
 };
@@ -194,12 +369,12 @@ export const fetchReservationsRange = (roomId, from, to) => {
       const data = await resp.json();
       dispatch(reservationsSuccess(data));
     } catch (err) {
-      dispatch(reservationsFailure(err.message));
+      dispatch(setError(err.message));
     }
   };
 };
 
-export const createReservation = ({ room, user, date, timeSlot }) => {
+export const createReservation = ({ roomId, userId, date, timeSlotId }) => {
   return async (dispatch, getState) => {
     dispatch(reservationsRequest());
     const token = getState().auth.token;
@@ -212,7 +387,7 @@ export const createReservation = ({ room, user, date, timeSlot }) => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ room, user, date, timeSlot }),
+        body: JSON.stringify({ roomId, userId, date, timeSlotId }),
       });
 
       const data = await resp.json();
@@ -224,8 +399,32 @@ export const createReservation = ({ room, user, date, timeSlot }) => {
 
       return true;
     } catch (err) {
-      dispatch(reservationsFailure(err.message));
+      dispatch(setError(err.message));
       return false;
+    }
+  };
+};
+
+export const deleteReservation = (reservationId) => {
+  return async (dispatch, getState) => {
+    const token = getState().auth.token;
+    if (!token) return;
+
+    try {
+      const resp = await fetch(
+        `${import.meta.env.VITE_API_URL}/reservations/${reservationId}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (!resp.ok) throw new Error("Errore nella cancellazione");
+
+      const currentDate = getState().calendar.currentDate;
+      await dispatch(fetchReservations(currentDate));
+    } catch (err) {
+      dispatch(setError(err.message));
     }
   };
 };

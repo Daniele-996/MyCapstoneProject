@@ -9,33 +9,34 @@ const TopBar = ({ toggleAside }) => {
   const dispatch = useDispatch();
   const token = useSelector((state) => state.auth.token);
 
+  const user = JSON.parse(localStorage.getItem("user"));
+
   return (
     <Navbar className="new-dark">
-      <Container
-        fluid
-        className="p-0 d-flex justify-content-between align-items-center"
-      >
-        <Button
-          className="logo-btn"
-          onClick={() => navigate("/")}
-          type="button"
-        >
-          <Image src={logo} alt="logo" className="logo-img" height="60" />
-        </Button>
+      <Container fluid className="topbar-container">
+        <div className="topbar-logo">
+          <Button
+            className="logo-btn"
+            onClick={() => navigate("/")}
+            type="button"
+          >
+            <Image src={logo} alt="logo" className="logo-img" height="60" />
+          </Button>
+        </div>
 
-        <div className="topbar-buttons">
+        <div className="topbar-buttons d-flex align-items-center gap-2">
           {!token ? (
             <>
               <Button
                 variant="outline-light"
-                className="rounded mx-2 my-1"
+                className="rounded"
                 onClick={() => navigate("/login")}
               >
                 Login
               </Button>
               <Button
                 variant="outline-light"
-                className="rounded mx-2 my-1"
+                className="rounded"
                 onClick={() => navigate("/register")}
               >
                 Registrati
@@ -43,21 +44,37 @@ const TopBar = ({ toggleAside }) => {
             </>
           ) : (
             <>
+              {user && (
+                <div className="d-flex align-items-center me-2">
+                  <Image
+                    src={user.avatarUrl}
+                    roundedCircle
+                    height="32"
+                    width="32"
+                    style={{ objectFit: "cover", cursor: "pointer" }}
+                    className="me-2 border border-light"
+                    onClick={() => navigate("/")}
+                  />
+                  <span className="text-light me-2">
+                    {user.firstName}, Welcome!!
+                  </span>
+                </div>
+              )}
               <Button
                 variant="outline-light"
-                className="rounded mx-2 my-1"
+                className="rounded"
                 onClick={toggleAside}
               >
                 ☰
               </Button>
               <Button
                 variant="danger"
-                className="rounded mx-2 my-1"
+                className="rounded"
                 onClick={() => {
                   localStorage.removeItem("token");
                   localStorage.removeItem("user");
                   dispatch(setLogout());
-                  navigate("/");
+                  navigate("/login");
                 }}
               >
                 Logout

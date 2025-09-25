@@ -1,5 +1,5 @@
 import { Offcanvas, Nav } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import {
   Calendar3,
   Building,
@@ -14,16 +14,11 @@ const AsideMenu = ({ show, onHide }) => {
   const storedUser = JSON.parse(localStorage.getItem("user"));
   const role = storedUser?.role || "USER";
 
-  const handleNavigate = (path) => {
-    navigate(path);
-    onHide();
-  };
-
   return (
     <Offcanvas
       show={show}
       onHide={onHide}
-      backdrop="static"
+      backdrop={true}
       className="aside-menu"
     >
       <Offcanvas.Header
@@ -38,16 +33,16 @@ const AsideMenu = ({ show, onHide }) => {
         <Nav className="flex-column">
           {role === "ADMIN" && (
             <>
-              <Nav.Link onClick={() => handleNavigate("/calendar")}>
+              <Nav.Link onClick={() => navigate("/calendar")}>
                 <Calendar3 className="me-2" /> Calendario
               </Nav.Link>
-              <Nav.Link onClick={() => handleNavigate("/rooms")}>
+              <Nav.Link onClick={() => navigate("/rooms")}>
                 <Building className="me-2" /> Stanze
               </Nav.Link>
-              <Nav.Link onClick={() => handleNavigate("/users")}>
+              <Nav.Link onClick={() => navigate("/users")}>
                 <People className="me-2" /> Utenti
               </Nav.Link>
-              <Nav.Link onClick={() => handleNavigate("/payments")}>
+              <Nav.Link onClick={() => navigate("/payments")}>
                 <CreditCard className="me-2" /> Pagamenti
               </Nav.Link>
             </>
@@ -55,13 +50,17 @@ const AsideMenu = ({ show, onHide }) => {
 
           {role === "USER" && (
             <>
-              <Nav.Link onClick={() => handleNavigate("/calendar")}>
+              <Nav.Link onClick={() => navigate("/calendar")}>
                 <Calendar3 className="me-2" /> Calendario
               </Nav.Link>
-              <Nav.Link onClick={() => handleNavigate("/my-bookings")}>
+              <Nav.Link
+                onClick={() => navigate(`/users/${storedUser.id}/reservations`)}
+              >
                 <Book className="me-2" /> Le mie prenotazioni
               </Nav.Link>
-              <Nav.Link onClick={() => handleNavigate("/my-payments")}>
+              <Nav.Link
+                onClick={() => navigate(`/users/${storedUser.id}/payments`)}
+              >
                 <CreditCard className="me-2" /> I miei pagamenti
               </Nav.Link>
             </>

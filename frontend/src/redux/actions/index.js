@@ -5,13 +5,16 @@ export const SET_DATE = "SET_DATE";
 export const SET_ERROR = "SET_ERROR";
 export const CLEAR_ERROR = "CLEAR_ERROR";
 export const SET_PAYMENTS = "SET_PAYMENTS";
+export const UPDATE_PAYMENT_STATUS = "UPDATE_PAYMENT_STATUS";
 export const SET_USER = "SET_USER";
-export const RESERVATIONS_REQUEST = "RESERVATIONS_REQUEST";
-export const RESERVATIONS_SUCCESS = "RESERVATIONS_SUCCESS";
-export const RESERVATIONS_FAILURE = "RESERVATIONS_FAILURE";
+export const UPDATE_AVATAR = "UPDATE_AVATAR";
 export const SETS_USERS = "SETS_USERS";
 export const UPDATE_USER_ROLE = "UPDATE_USER_ROLE";
 export const DELETE_USER = "DELETE_USER";
+export const USER_PAYMENTS = "USER_PAYMENTS";
+export const RESERVATIONS_REQUEST = "RESERVATIONS_REQUEST";
+export const RESERVATIONS_SUCCESS = "RESERVATIONS_SUCCESS";
+export const RESERVATIONS_FAILURE = "RESERVATIONS_FAILURE";
 
 //------------------------------ ACTION CREATORS ---------------------------------
 export const setRooms = (rooms) => ({ type: SET_ROOMS, payload: rooms });
@@ -55,6 +58,16 @@ export const reservationsFailure = (message) => ({
 });
 
 export const setUsers = (users) => ({ type: SETS_USERS, payload: users });
+
+export const updateAvatarAction = (user) => ({
+  type: UPDATE_AVATAR,
+  payload: user,
+});
+
+export const setUserPayments = (payments) => ({
+  type: USER_PAYMENTS,
+  payload: payments,
+});
 
 //------------------------------ ALL FETCHS ---------------------------------
 
@@ -159,6 +172,37 @@ export const updateUserRole = (userId, newRole) => {
   };
 };
 
+export const updateUserAvatar = (userId, file) => {
+  return async (dispatch, getState) => {
+    const token = getState().auth.token;
+    if (!token) return;
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const resp = await fetch(
+        `${import.meta.env.VITE_API_URL}/users/${userId}/avatar`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        }
+      );
+
+      if (!resp.ok) throw new Error("Errore durante l'upload avatar");
+
+      const updatedUser = await resp.json();
+      dispatch(updateAvatarAction(updatedUser));
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+    } catch (err) {
+      dispatch(setError(err.message));
+    }
+  };
+};
+
 export const deleteUser = (userId) => {
   return async (dispatch) => {
     const token = localStorage.getItem("token");
@@ -185,51 +229,28 @@ export const deleteUser = (userId) => {
   };
 };
 
-// export const fetchUserPayments = (userId) => {
-//   return async (dispatch) => {
-//     dispatch(clearError());
-//     const token = localStorage.getItem("token");
-//     if (!token) return;
+export const fetchUserReservations = (userId) => {
+  return async (dispatch) => {
+    dispatch(reservationsRequest());
+    const token = localStorage.getItem("token");
+    if (!token) return;
 
-//     try {
-//       const resp = await fetch(
-//         `${import.meta.env.VITE_API_URL}/payments/search?userId=${userId}`,
-//         {
-//           headers: { Authorization: `Bearer ${token}` },
-//         }
-//       );
-//       if (!resp.ok) throw new Error("Errore nel caricamento pagamenti");
+    try {
+      const resp = await fetch(
+        `${import.meta.env.VITE_API_URL}/reservations/search?userId=${userId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (!resp.ok) throw new Error("Errore nel caricamento prenotazioni");
 
-//       const data = await resp.json();
-//       dispatch(setPayments(data));
-//     } catch (err) {
-//       dispatch(setError(err.message));
-//     }
-//   };
-// };
-
-// export const fetchUserReservations = (userId) => {
-//   return async (dispatch) => {
-//     dispatch(reservationsRequest());
-//     const token = localStorage.getItem("token");
-//     if (!token) return;
-
-//     try {
-//       const resp = await fetch(
-//         `${import.meta.env.VITE_API_URL}/reservations/search?userId=${userId}`,
-//         {
-//           headers: { Authorization: `Bearer ${token}` },
-//         }
-//       );
-//       if (!resp.ok) throw new Error("Errore nel caricamento prenotazioni");
-
-//       const data = await resp.json();
-//       dispatch(reservationsSuccess(data));
-//     } catch (err) {
-//       dispatch(reservationsFailure(err.message));
-//     }
-//   };
-// };
+      const data = await resp.json();
+      dispatch(reservationsSuccess(data));
+    } catch (err) {
+      dispatch(reservationsFailure(err.message));
+    }
+  };
+};
 
 export const fetchRooms = () => {
   return async (dispatch, getState) => {
@@ -323,6 +344,60 @@ export const fetchPayments = () => {
   };
 };
 
+export const updatePaymentStatus = (id, newStatus) => {
+  return async (dispatch, getState) => {
+    const token = getState().auth.token;
+    if (!token) return;
+
+    try {
+      const resp = await fetch(
+        `${
+          import.meta.env.VITE_API_URL
+        }/payments/${id}/status?status=${newStatus}`,
+        {
+          method: "PUT",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (!resp.ok) throw new Error("Errore aggiornamento pagamento");
+
+      const updatedPayment = await resp.json();
+      dispatch({
+        type: "UPDATE_PAYMENT_STATUS",
+        payload: updatedPayment,
+      });
+    } catch (err) {
+      dispatch(setError(err.message));
+    }
+  };
+};
+
+export const fetchUserPayments = (userId) => {
+  return async (dispatch, getState) => {
+    const token = getState().auth.token;
+    if (!token) return;
+
+    try {
+      const resp = await fetch(
+        `${import.meta.env.VITE_API_URL}/payments/search?userId=${userId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (!resp.ok) {
+        throw new Error("Errore nel caricamento dei pagamenti utente");
+      }
+
+      const data = await resp.json();
+      dispatch(setUserPayments(data));
+    } catch (err) {
+      console.error("fetchUserPayments error:", err.message);
+    }
+  };
+};
+
 export const fetchReservations = () => {
   return async (dispatch) => {
     dispatch(reservationsRequest());
@@ -338,35 +413,6 @@ export const fetchReservations = () => {
       if (!resp.ok)
         throw new Error(data.message || "Errore nel caricamento prenotazioni");
 
-      dispatch(reservationsSuccess(data));
-    } catch (err) {
-      dispatch(setError(err.message));
-    }
-  };
-};
-
-export const fetchReservationsRange = (roomId, from, to) => {
-  return async (dispatch, getState) => {
-    dispatch(reservationsRequest());
-    const token = getState().auth.token;
-    if (!token) return;
-
-    try {
-      const url = `${
-        import.meta.env.VITE_API_URL
-      }/reservations/search?roomId=${roomId}&from=${from}&to=${to}`;
-
-      const resp = await fetch(url, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (!resp.ok) {
-        throw new Error(
-          "Errore nel caricamento delle prenotazioni settimanali"
-        );
-      }
-
-      const data = await resp.json();
       dispatch(reservationsSuccess(data));
     } catch (err) {
       dispatch(setError(err.message));

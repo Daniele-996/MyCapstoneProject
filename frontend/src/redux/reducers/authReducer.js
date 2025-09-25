@@ -16,13 +16,8 @@ const authReducer = (state = initialState, action) => {
         password: action.payload.password,
       };
     case SET_LOGOUT:
-      return {
-        ...state,
-        token: null,
-        email: null,
-        password: null,
-        role: null,
-      };
+      window.location.reload();
+      return initialState;
     default:
       return state;
   }

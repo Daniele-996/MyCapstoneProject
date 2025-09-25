@@ -1,6 +1,7 @@
 package MyCapstoneProject.capstone.entities;
 
 import MyCapstoneProject.capstone.enums.StatusPayment;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 
@@ -13,6 +14,7 @@ public class Payment {
     @ManyToOne
     private User user;
     @OneToOne
+    @JsonIgnore
     private Reservation reservation;
     private double amount;
     @Enumerated(EnumType.STRING)

@@ -41,8 +41,6 @@ const TableRooms = () => {
     }
   }, [feedback]);
 
-  const fixedSlots = rooms.length > 0 ? rooms[0].timeSlots : [];
-
   useEffect(() => {
     dispatch(fetchRooms());
   }, [dispatch]);
@@ -61,6 +59,11 @@ const TableRooms = () => {
     .forEach((r) => {
       reservationsMap[`${r.roomId}-${r.timeSlotId}`] = r;
     });
+
+  const allSlots = rooms.flatMap((room) => room.timeSlots);
+  const uniqueSlots = Array.from(
+    new Map(allSlots.map((s) => [`${s.startTime}-${s.endTime}`, s])).values()
+  ).sort((a, b) => a.startTime.localeCompare(b.startTime));
 
   const handleBadgeClick = (room, slot, reserved) => {
     if (!reserved) {
@@ -135,7 +138,7 @@ const TableRooms = () => {
 
   if (error) {
     return (
-      <Alert variant="danger" className="text-center w-50 mx-auto">
+      <Alert variant="danger" className="app-alert text-center">
         {error}
       </Alert>
     );
@@ -148,7 +151,7 @@ const TableRooms = () => {
           variant={feedback.type}
           dismissible
           onClose={() => setFeedback(null)}
-          className="text-center w-50 mx-auto"
+          className="app-alert text-center"
         >
           {feedback.message}
         </Alert>
@@ -158,7 +161,7 @@ const TableRooms = () => {
         show={!!pendingReservation}
         onHide={() => setPendingReservation(null)}
         centered
-        className="room-admin-container"
+        className="app-card"
       >
         <Modal.Header closeButton>
           <Modal.Title>Conferma prenotazione</Modal.Title>
@@ -182,12 +185,12 @@ const TableRooms = () => {
         </Modal.Body>
         <Modal.Footer>
           <Button
-            variant="secondary"
+            className="btn-secondary-custom"
             onClick={() => setPendingReservation(null)}
           >
             Annulla
           </Button>
-          <Button variant="success" onClick={confirmReservation}>
+          <Button className="btn-success-custom" onClick={confirmReservation}>
             Conferma
           </Button>
         </Modal.Footer>
@@ -197,7 +200,7 @@ const TableRooms = () => {
         show={!!pendingDelete}
         onHide={() => setPendingDelete(null)}
         centered
-        className="room-admin-container"
+        className="app-card"
       >
         <Modal.Header closeButton>
           <Modal.Title>Conferma eliminazione</Modal.Title>
@@ -206,10 +209,13 @@ const TableRooms = () => {
           Sei sicuro di voler eliminare questa prenotazione?
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setPendingDelete(null)}>
+          <Button
+            className="btn-secondary-custom"
+            onClick={() => setPendingDelete(null)}
+          >
             Annulla
           </Button>
-          <Button variant="danger" onClick={confirmDelete}>
+          <Button className="btn-danger-custom" onClick={confirmDelete}>
             Elimina
           </Button>
         </Modal.Footer>
@@ -218,24 +224,28 @@ const TableRooms = () => {
       <Table bordered className="room-table text-center align-middle">
         <thead>
           <tr>
-            <th>Orario</th>
+            <th className="time-col">Orario</th>
             {rooms.map((room) => (
               <th key={room.id}>{room.nameRoom}</th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {fixedSlots.map((slot) => (
+          {uniqueSlots.map((slot) => (
             <tr key={slot.id}>
-              <td>{`${slot.startTime} - ${slot.endTime}`}</td>
+              <td className="time-col">{`${slot.startTime} - ${slot.endTime}`}</td>
               {rooms.map((room) => {
-                const key = `${room.id}-${slot.id}`;
-                const reservation = reservationsMap[key];
+                const roomSlot = room.timeSlots.find(
+                  (s) =>
+                    s.startTime === slot.startTime && s.endTime === slot.endTime
+                );
+                const key = roomSlot ? `${room.id}-${roomSlot.id}` : null;
+                const reservation = key ? reservationsMap[key] : null;
                 const reserved = !!reservation;
                 const clickable = !reserved || (reserved && role === "ADMIN");
                 const isMine = reservation && reservation.userId === userId;
                 return (
-                  <td key={key}>
+                  <td key={room.id + "-" + slot.startTime}>
                     <Badge
                       className={
                         !reserved
@@ -251,7 +261,8 @@ const TableRooms = () => {
                       }}
                       onClick={
                         clickable
-                          ? () => handleBadgeClick(room, slot, reserved)
+                          ? () =>
+                              handleBadgeClick(room, roomSlot || slot, reserved)
                           : undefined
                       }
                     >

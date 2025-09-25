@@ -16,7 +16,9 @@ import AsideMenu from "./components/AsideMenu";
 import { useState } from "react";
 import Users from "./components/Users";
 import UserPayments from "./components/UserPayments";
-// import UserReservations from "./components/UserReservations";
+import UserReservations from "./components/UserReservations";
+import Profile from "./components/Profile";
+import AllPayments from "./components/AllPayments";
 
 const App = () => {
   const token = useSelector((s) => s.auth.token);
@@ -24,10 +26,10 @@ const App = () => {
 
   return (
     <Router>
-      <div className="d-flex flex-column min-vh-100">
+      <div className="app-container">
         <TopBar toggleAside={() => setShowAside(true)} />
-        <Container fluid className="flex-grow-1 d-flex p-0">
-          <Row className="flex-grow-1 d-flex align-items-stretch w-100 m-0">
+        <Container fluid className="content p-0">
+          <Row className="flex-grow-1 w-100 m-0">
             <Col md={3} lg={3} className="d-none d-md-block p-0">
               {token && (
                 <AsideMenu
@@ -42,13 +44,38 @@ const App = () => {
               className="p-3 d-flex flex-column"
             >
               <Routes>
-                <Route path="/login" element={<FormLogin />} />
-                <Route path="/register" element={<FormRegister />} />
-                <Route path="/users/:id/payments" element={<UserPayments />} />
-                {/* <Route
+                <Route
+                  path="/login"
+                  element={token ? <Navigate to="/dashboard" /> : <FormLogin />}
+                />
+                <Route
+                  path="/register"
+                  element={
+                    token ? <Navigate to="/dashboard" /> : <FormRegister />
+                  }
+                />
+                <Route
+                  path="/"
+                  element={token ? <Profile /> : <Navigate to="/login" />}
+                />
+                <Route
+                  path="/payments"
+                  element={token ? <AllPayments /> : <Navigate to="/login" />}
+                />
+                <Route
+                  path="/users"
+                  element={token ? <Users /> : <Navigate to="/login" />}
+                />
+                <Route
+                  path="/users/:id/payments"
+                  element={token ? <UserPayments /> : <Navigate to="/login" />}
+                />
+                <Route
                   path="/users/:id/reservations"
-                  element={<UserReservations />}
-                /> */}
+                  element={
+                    token ? <UserReservations /> : <Navigate to="/login" />
+                  }
+                />
                 <Route
                   path="/dashboard"
                   element={token ? <Dashboard /> : <Navigate to="/login" />}
@@ -57,7 +84,6 @@ const App = () => {
                   path="/rooms"
                   element={token ? <Room /> : <Navigate to="/login" />}
                 />
-                <Route path="/users" element={<Users />} />
                 <Route
                   path="*"
                   element={<Navigate to={token ? "/dashboard" : "/login"} />}

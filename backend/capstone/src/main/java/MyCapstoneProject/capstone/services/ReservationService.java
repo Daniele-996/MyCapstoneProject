@@ -1,15 +1,10 @@
 package MyCapstoneProject.capstone.services;
 
-import MyCapstoneProject.capstone.entities.Reservation;
-import MyCapstoneProject.capstone.entities.Room;
-import MyCapstoneProject.capstone.entities.TimeSlot;
-import MyCapstoneProject.capstone.entities.User;
+import MyCapstoneProject.capstone.entities.*;
+import MyCapstoneProject.capstone.enums.StatusPayment;
 import MyCapstoneProject.capstone.exceptions.NotFoundException;
 import MyCapstoneProject.capstone.payloads.ReservationDTO;
-import MyCapstoneProject.capstone.repositories.ReservationRepo;
-import MyCapstoneProject.capstone.repositories.RoomRepo;
-import MyCapstoneProject.capstone.repositories.TimeSlotRepo;
-import MyCapstoneProject.capstone.repositories.UserRepo;
+import MyCapstoneProject.capstone.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +21,8 @@ public class ReservationService {
     private TimeSlotRepo timeSlotRepo;
     @Autowired
     private UserRepo userRepo;
+    @Autowired
+    private PaymentRepo paymentRepo;
 
     private ReservationDTO mapToDTO(Reservation reservation) {
         return new ReservationDTO(
@@ -34,7 +31,7 @@ public class ReservationService {
                 reservation.getUser().getId(),
                 reservation.getDate(),
                 reservation.getTimeSlot().getId(),
-                reservation.getAmount()
+                reservation.getPayment().getAmount()
         );
     }
 
@@ -46,13 +43,21 @@ public class ReservationService {
         TimeSlot timeSlot = timeSlotRepo.findById(timeSlotId)
                 .orElseThrow(() -> new NotFoundException("Orario non trovato!!"));
 
+        if (!room.getTimeSlots().contains(timeSlot)) {
+            throw new IllegalArgumentException("Questo orario non appartiene alla stanza selezionata!!");
+        }
+
         boolean exists = reservationRepo.existsByRoomAndDateAndTimeSlot(room, date, timeSlot);
         if (exists) {
             throw new RuntimeException("Questo orario non è disponibile per questa data!!");
         }
+        
+        Reservation reservation = new Reservation(room, user, date, timeSlot);
         double amount = timeSlot.getPrice();
+        Payment payment = new Payment(user, reservation, amount, StatusPayment.NOT_PAID);
+        reservation.setPayment(payment);
+        Reservation saved = reservationRepo.save(reservation);
 
-        Reservation saved = reservationRepo.save(new Reservation(room, user, date, timeSlot, amount));
         return mapToDTO(saved);
     }
 

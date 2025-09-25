@@ -9,6 +9,8 @@ import MyCapstoneProject.capstone.payloads.NewUserDTO;
 import MyCapstoneProject.capstone.payloads.UpdateUserDTO;
 import MyCapstoneProject.capstone.repositories.UserRepo;
 import MyCapstoneProject.capstone.tools.MailgunSender;
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +21,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class UserService {
@@ -31,6 +36,8 @@ public class UserService {
     private PasswordEncoder bcrypt;
     @Autowired
     private MailgunSender mailgunSender;
+    @Autowired
+    private Cloudinary cloudinary;
 
     @Value("${URL_AVATAR_DEFAULT}")
     private String defaultAvatarUrl;
@@ -94,6 +101,17 @@ public class UserService {
         User modifiedUser = this.userRepo.save(foundByAdmin);
         log.info("ADMIN ha aggiornato l'utente con id: {}", foundByAdmin.getId());
         return modifiedUser;
+    }
+
+    public User updateAvatar(Long id, MultipartFile file) throws IOException {
+        User user = this.findById(id);
+
+        Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
+        String avatarUrl = (String) uploadResult.get("secure_url");
+        user.setAvatarUrl(avatarUrl);
+        User updated = userRepo.save(user);
+        log.info("L'utente con id {} ha aggiornato l'avatar", id);
+        return updated;
     }
 
     public void findByIdAndDelete(long id) {

@@ -9,7 +9,6 @@ import {
   Form,
   Button,
   Alert,
-  Image,
   Card,
 } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
@@ -31,21 +30,21 @@ const FormLogin = () => {
     const token = localStorage.getItem("token");
     if (token) {
       await dispatch(fetchUserProfile());
-      navigate("/dashboard");
+      navigate("/");
     }
   };
 
   return (
-    <Container className="d-flex justify-content-center align-items-center ">
+    <Container className="d-flex justify-content-center align-items-center">
       <Row
         className="d-flex justify-content-center"
         style={{ maxWidth: "100%" }}
       >
         <Col xs={10} sm={8} md={6} className="my-3">
-          <Card className="new-dark text-white border-0">
+          <Card className="app-card border-0">
             <Card.Img variant="top" src={login} />
             <Card.Body>
-              <Card.Title className="text-center">Login</Card.Title>
+              <Card.Title className="app-title">Login</Card.Title>
 
               <Form onSubmit={handleSubmit}>
                 <Form.Group className="mb-3">
@@ -57,6 +56,7 @@ const FormLogin = () => {
                     value={form.email}
                     onChange={handleChange}
                     required
+                    className="custom-input"
                   />
                 </Form.Group>
 
@@ -69,17 +69,18 @@ const FormLogin = () => {
                     value={form.password}
                     onChange={handleChange}
                     required
+                    className="custom-input"
                   />
                 </Form.Group>
 
-                <Button variant="dark" type="submit" className="w-100">
+                <Button type="submit" className="btn-secondary-custom w-100">
                   Accedi
                 </Button>
               </Form>
             </Card.Body>
 
             {errorMessage && (
-              <Alert className="mx-3" variant="danger">
+              <Alert className="app-alert" variant="danger">
                 {errorMessage}
               </Alert>
             )}

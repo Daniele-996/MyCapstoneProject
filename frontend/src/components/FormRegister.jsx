@@ -27,41 +27,47 @@ const FormRegister = () => {
   });
 
   const [successMsg, setSuccessMsg] = useState("");
-
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    if (e.target.name === "phone") {
+      const onlyNums = e.target.value.replace(/\D/g, "");
+      setForm({ ...form, phone: onlyNums });
+    } else {
+      setForm({ ...form, [e.target.name]: e.target.value });
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const success = await dispatch(registerUser(form));
+    const fixedForm = {
+      ...form,
+      phone: form.phone.startsWith("+39") ? form.phone : `+39${form.phone}`,
+    };
+    const success = await dispatch(registerUser(fixedForm));
     if (success) {
       setSuccessMsg("Benvenuto! Ora puoi effettuare il login!");
-      setTimeout(() => navigate("/login"), 2200);
+      setTimeout(() => navigate("/login"), 3000);
     } else navigate("/register");
   };
 
   return (
-    <Container
-      fluid
-      className="h-100 d-flex justify-content-center align-items-center "
-    >
+    <Container className="d-flex justify-content-center align-items-center">
       <Row
         className="d-flex justify-content-center"
         style={{ maxWidth: "100%" }}
       >
         <Col xs={10} sm={8} md={6} className="my-3">
-          <Card className="new-dark text-white border-0">
+          <Card className="app-card border-0">
             <Card.Img variant="top" src={registrazione} />
             <Card.Body>
-              <Card.Title className="text-center">Registrati</Card.Title>
+              <Card.Title className="app-title">Registrati</Card.Title>
 
               {errorMessage && (
-                <Alert className="mx-3" variant="danger">
+                <Alert className="app-alert" variant="danger">
                   {errorMessage}
                 </Alert>
               )}
               {successMsg && (
-                <Alert className="mx-3" variant="success">
+                <Alert className="app-alert" variant="success">
                   {successMsg}
                 </Alert>
               )}
@@ -76,6 +82,7 @@ const FormRegister = () => {
                     value={form.firstName}
                     onChange={handleChange}
                     required
+                    className="custom-input"
                   />
                 </Form.Group>
 
@@ -88,6 +95,7 @@ const FormRegister = () => {
                     value={form.lastName}
                     onChange={handleChange}
                     required
+                    className="custom-input"
                   />
                 </Form.Group>
 
@@ -100,6 +108,7 @@ const FormRegister = () => {
                     value={form.email}
                     onChange={handleChange}
                     required
+                    className="custom-input"
                   />
                 </Form.Group>
 
@@ -112,7 +121,12 @@ const FormRegister = () => {
                     value={form.password}
                     onChange={handleChange}
                     required
+                    className="custom-input"
                   />
+                  <Form.Text className="text-muted">
+                    Almeno una maiuscola, una minuscola, un numero ed un
+                    carattere speciale!
+                  </Form.Text>
                 </Form.Group>
 
                 <Form.Group className="mb-3">
@@ -120,14 +134,19 @@ const FormRegister = () => {
                   <Form.Control
                     type="text"
                     name="phone"
-                    placeholder="Inserisci il numero di telefono"
+                    placeholder="Numero di telefono (senza +39)"
                     value={form.phone}
                     onChange={handleChange}
                     required
+                    className="custom-input"
                   />
+                  <Form.Text className="text-muted">
+                    Inserisci solo il numero, il prefisso +39 viene aggiunto
+                    automaticamente.
+                  </Form.Text>
                 </Form.Group>
 
-                <Button variant="dark" type="submit" className="w-100">
+                <Button type="submit" className="btn-secondary-custom w-100">
                   Registrati
                 </Button>
               </Form>

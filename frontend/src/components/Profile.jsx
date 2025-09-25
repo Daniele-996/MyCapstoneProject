@@ -1,52 +1,103 @@
-import { useSelector } from "react-redux";
-import { Container } from "react-bootstrap";
-
-const mockReservations = [
-  { date: "2025-09-10", room: "Room 3" },
-  { date: "2025-09-12", room: "Room 5" },
-];
-
-const mockUsers = [
-  { username: "mario", reservations: [{ date: "2025-09-11", room: "Room 1" }] },
-  { username: "luigi", reservations: [{ date: "2025-09-12", room: "Room 2" }] },
-];
+import { useDispatch, useSelector } from "react-redux";
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  Image,
+  Button,
+  Form,
+} from "react-bootstrap";
+import BackBtn from "./BackBtn";
+import { useRef } from "react";
+import { updateUserAvatar } from "../redux/actions";
 
 const Profile = () => {
-  const { user } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+  const fileInput = useRef(null);
+  const user = useSelector((state) => state.user.user);
+
+  if (!user) {
+    return (
+      <Container className="mt-5 text-center">
+        <h3>⚠ Nessun utente loggato</h3>
+      </Container>
+    );
+  }
+
+  const handleAvatarClick = () => {
+    fileInput.current.click();
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert("Il file è troppo grande! Max 2MB.");
+        return;
+      }
+      dispatch(updateUserAvatar(user.id, file));
+    }
+  };
 
   return (
-    <Container className="p-4">
-      <h2>Profilo: {user?.username}</h2>
-      {user?.role === "USER" && (
-        <>
-          <h4>Le tue prenotazioni:</h4>
-          <ul>
-            {mockReservations.map((r, i) => (
-              <li key={i}>
-                {r.date} – {r.room}
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
-
-      {user?.role === "ADMIN" && (
-        <>
-          <h4>Utenti e prenotazioni:</h4>
-          {mockUsers.map((u) => (
-            <div key={u.username}>
-              <strong>{u.username}</strong>
-              <ul>
-                {u.reservations.map((r, i) => (
-                  <li key={i}>
-                    {r.date} – {r.room}
-                  </li>
-                ))}
-              </ul>
+    <Container className="mt-4">
+      <Row className="justify-content-center">
+        <Col md={8} lg={6}>
+          <Card className="p-4 shadow new-dark text-light rounded-3">
+            <div className="d-flex align-items-center mb-4">
+              <Image
+                src={user.avatarUrl}
+                roundedCircle
+                height="100"
+                width="100"
+                className="me-3 border border-3 border-light"
+                onClick={handleAvatarClick}
+                style={{ cursor: "pointer", objectFit: "cover" }}
+              />
+              <Form.Control
+                type="file"
+                accept="image/*"
+                ref={fileInput}
+                style={{ display: "none" }}
+                onChange={handleFileChange}
+              />
+              <div>
+                <h4>
+                  {user.firstName} {user.lastName}
+                </h4>
+                <span className="badge bg-info text-dark">{user.role}</span>
+              </div>
             </div>
-          ))}
-        </>
-      )}
+
+            <Card.Body>
+              <Row className="mb-3">
+                <Col sm={4}>
+                  <strong>Email:</strong>
+                </Col>
+                <Col sm={8}>{user.email}</Col>
+              </Row>
+              <Row className="mb-3">
+                <Col sm={4}>
+                  <strong>Telefono:</strong>
+                </Col>
+                <Col sm={8}>{user.phone}</Col>
+              </Row>
+              <Row>
+                <Col sm={4}>
+                  <strong>Username:</strong>
+                </Col>
+                <Col sm={8}>{user.username}</Col>
+              </Row>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Row className="mt-3">
+          <Col className="d-flex justify-content-center">
+            <BackBtn />
+          </Col>
+        </Row>
+      </Row>
     </Container>
   );
 };

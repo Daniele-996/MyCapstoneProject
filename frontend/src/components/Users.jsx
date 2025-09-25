@@ -1,9 +1,19 @@
 import { useSelector, useDispatch } from "react-redux";
-import { Table, Alert, Modal, Button, Badge } from "react-bootstrap";
+import {
+  Table,
+  Alert,
+  Modal,
+  Button,
+  Badge,
+  Container,
+  Row,
+  Col,
+} from "react-bootstrap";
 import { updateUserRole, deleteUser } from "../redux/actions";
 import { Trash } from "react-bootstrap-icons";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import BackBtn from "./BackBtn";
 
 const Users = () => {
   const users = useSelector((s) => s.user.content);
@@ -16,7 +26,7 @@ const Users = () => {
 
   if (role !== "ADMIN") {
     return (
-      <Alert variant="danger" className="text-center w-50 mx-auto mt-3">
+      <Alert variant="danger" className="app-alert text-center">
         Accesso non autorizzato
       </Alert>
     );
@@ -24,7 +34,7 @@ const Users = () => {
 
   if (!users || users.length === 0) {
     return (
-      <Alert variant="info" className="text-center w-50 mx-auto mt-3">
+      <Alert variant="info" className="app-alert text-center">
         Nessun utente trovato
       </Alert>
     );
@@ -49,11 +59,12 @@ const Users = () => {
   };
 
   return (
-    <>
-      <div className="table-responsive my-3">
+    <Container className="page-centered">
+      <Container className="table-responsive my-3">
         <Table bordered className="room-table text-center align-middle">
           <thead>
             <tr>
+              <th>Avatar</th>
               <th>Nome</th>
               <th>Cognome</th>
               <th>Email</th>
@@ -65,13 +76,28 @@ const Users = () => {
           <tbody>
             {users.map((user) => (
               <tr key={user.id}>
+                <td>
+                  {" "}
+                  <img
+                    src={
+                      user.avatarUrl
+                        ? user.avatarUrl
+                        : `https://ui-avatars.com/api/?name=${user.firstName}+${user.lastName}&background=random`
+                    }
+                    alt={`${user.firstName} ${user.lastName}`}
+                    style={{
+                      width: "40px",
+                      height: "40px",
+                      borderRadius: "50%",
+                    }}
+                  />
+                </td>
                 <td>{user.firstName}</td>
                 <td>{user.lastName}</td>
                 <td>{user.email}</td>
                 <td>
                   <Badge
-                    bg="outline-secondary"
-                    className="action-badge"
+                    className="action-badge bg-dark-subtle text-dark"
                     onClick={() => navigate(`/users/${user.id}/reservations`)}
                   >
                     Prenotazioni
@@ -79,19 +105,17 @@ const Users = () => {
                 </td>
                 <td>
                   <Badge
-                    bg="outline-secondary"
-                    className="action-badge"
+                    className="action-badge bg-dark-subtle text-dark"
                     onClick={() => navigate(`/users/${user.id}/payments`)}
                   >
                     Pagamenti
                   </Badge>
                 </td>
                 <td>
-                  <div className="d-flex justify-content-around align-items-center">
+                  <Container className="d-flex justify-content-around align-items-center">
                     <Badge
-                      bg={user.role === "ADMIN" ? "warning text-dark" : "dark"}
                       className="action-badge"
-                      style={{ cursor: "pointer" }}
+                      bg={user.role === "ADMIN" ? "warning text-dark" : "dark"}
                       onClick={() => handleRoleClick(user)}
                     >
                       {user.role}
@@ -102,18 +126,24 @@ const Users = () => {
                       style={{ cursor: "pointer" }}
                       onClick={() => handleDeleteClick(user)}
                     />
-                  </div>
+                  </Container>
                 </td>
               </tr>
             ))}
           </tbody>
         </Table>
-      </div>
+        <Row className="mt-3">
+          <Col className="d-flex justify-content-center">
+            <BackBtn />
+          </Col>
+        </Row>
+      </Container>
+
       <Modal
         show={showDeleteModal}
         onHide={() => setShowDeleteModal(false)}
         centered
-        className="room-admin-container"
+        className="app-card"
       >
         <Modal.Header closeButton>
           <Modal.Title>Conferma eliminazione</Modal.Title>
@@ -126,15 +156,18 @@ const Users = () => {
           ?
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+          <Button
+            className="btn-secondary-custom"
+            onClick={() => setShowDeleteModal(false)}
+          >
             Annulla
           </Button>
-          <Button variant="danger" onClick={confirmDelete}>
+          <Button className="btn-danger-custom" onClick={confirmDelete}>
             Elimina
           </Button>
         </Modal.Footer>
       </Modal>
-    </>
+    </Container>
   );
 };
 

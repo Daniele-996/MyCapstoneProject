@@ -16,7 +16,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -75,6 +77,13 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public User getByIdAndUpdate(@PathVariable long id, @RequestBody AdminUpdateDTO payload) {
         return this.userService.updateUserByAdmin(id, payload);
+    }
+
+    @PutMapping("/{id}/avatar")
+    @PreAuthorize("hasAnyAuthority('ADMIN','USER')")
+    public User updateAvatar(@PathVariable Long id,
+                             @RequestParam("file") MultipartFile file) throws IOException {
+        return userService.updateAvatar(id, file);
     }
 
     @DeleteMapping("/{id}")

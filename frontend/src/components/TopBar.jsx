@@ -17,7 +17,7 @@ const TopBar = ({ toggleAside }) => {
         <div className="topbar-logo">
           <Button
             className="logo-btn"
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/profile")}
             type="button"
           >
             <Image src={logo} alt="logo" className="logo-img" height="60" />

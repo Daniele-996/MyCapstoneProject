@@ -55,7 +55,7 @@ const App = () => {
                   }
                 />
                 <Route
-                  path="/"
+                  path="/profile"
                   element={token ? <Profile /> : <Navigate to="/login" />}
                 />
                 <Route

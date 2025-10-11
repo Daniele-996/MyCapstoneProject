@@ -83,12 +83,6 @@ const Profile = () => {
                 </Col>
                 <Col sm={8}>{user.phone}</Col>
               </Row>
-              <Row>
-                <Col sm={4}>
-                  <strong>Username:</strong>
-                </Col>
-                <Col sm={8}>{user.username}</Col>
-              </Row>
             </Card.Body>
           </Card>
         </Col>

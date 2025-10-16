@@ -74,43 +74,48 @@ const TableRooms = () => {
     }
   };
 
-  const confirmReservation = () => {
+  const confirmReservation = async () => {
     if (!pendingReservation || !userId) {
       setFeedback({ type: "danger", message: "Impossibile prenotare." });
       return;
     }
-    dispatch(
-      createReservation({
-        roomId: pendingReservation.room.id,
-        userId,
-        date: currentDate,
-        timeSlotId: pendingReservation.slot.id,
-      })
-    )
-      .then(() => {
-        setFeedback({ type: "success", message: "Prenotazione avvenuta!" });
-        dispatch(fetchReservations(currentDate));
-      })
-      .catch(() =>
-        setFeedback({ type: "danger", message: "Errore nella prenotazione" })
-      );
-    setPendingReservation(null);
-  };
-
-  const confirmDelete = () => {
-    if (!pendingDelete) return;
-    dispatch(deleteReservation(pendingDelete.id))
-      .then(() => {
-        setFeedback({ type: "success", message: "Prenotazione eliminata!" });
-        dispatch(fetchReservations(currentDate));
-      })
-      .catch(() =>
-        setFeedback({
-          type: "danger",
-          message: "Errore durante l'eliminazione",
+    try {
+      await dispatch(
+        createReservation({
+          roomId: pendingReservation.room.id,
+          userId,
+          date: currentDate,
+          timeSlotId: pendingReservation.slot.id,
         })
       );
-    setPendingDelete(null);
+      setFeedback({ type: "success", message: "Prenotazione avvenuta!" });
+      dispatch(fetchReservations(currentDate));
+    } catch (err) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Errore nella prenotazione";
+      setFeedback({ type: "danger", message: msg });
+    } finally {
+      setPendingReservation(null);
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!pendingDelete) return;
+    try {
+      await dispatch(deleteReservation(pendingDelete.id));
+      setFeedback({ type: "success", message: "Prenotazione eliminata!" });
+      dispatch(fetchReservations(currentDate));
+    } catch (err) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Errore durante l'eliminazione";
+      setFeedback({ type: "danger", message: msg });
+    } finally {
+      setPendingDelete(null);
+    }
   };
 
   const getDisplayLabel = (reservation) => {

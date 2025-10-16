@@ -10,7 +10,9 @@ import {
   Button,
   Alert,
   Card,
+  InputGroup,
 } from "react-bootstrap";
+import { Eye, EyeSlash } from "react-bootstrap-icons";
 import { useNavigate } from "react-router-dom";
 
 const FormLogin = () => {
@@ -19,6 +21,7 @@ const FormLogin = () => {
   const errorMessage = useSelector((state) => state.error.message);
 
   const [form, setForm] = useState({ email: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -26,7 +29,6 @@ const FormLogin = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     await dispatch(loginUser(form.email, form.password));
-
     const token = localStorage.getItem("token");
     if (token) {
       await dispatch(fetchUserProfile());
@@ -62,15 +64,25 @@ const FormLogin = () => {
 
                 <Form.Group className="mb-3">
                   <Form.Label>Password</Form.Label>
-                  <Form.Control
-                    type="password"
-                    name="password"
-                    placeholder="Inserisci la password"
-                    value={form.password}
-                    onChange={handleChange}
-                    required
-                    className="custom-input"
-                  />
+                  <InputGroup>
+                    <Form.Control
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      placeholder="Inserisci la password"
+                      value={form.password}
+                      onChange={handleChange}
+                      required
+                      className="custom-input"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline-light"
+                      onClick={() => setShowPassword((s) => !s)}
+                      aria-label={showPassword ? <EyeSlash /> : <Eye />}
+                    >
+                      {showPassword ? <EyeSlash /> : <Eye />}
+                    </Button>
+                  </InputGroup>
                 </Form.Group>
 
                 <Button type="submit" className="btn-secondary-custom w-100">

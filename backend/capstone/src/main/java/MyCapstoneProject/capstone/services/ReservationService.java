@@ -2,6 +2,7 @@ package MyCapstoneProject.capstone.services;
 
 import MyCapstoneProject.capstone.entities.*;
 import MyCapstoneProject.capstone.enums.StatusPayment;
+import MyCapstoneProject.capstone.exceptions.BadRequestException;
 import MyCapstoneProject.capstone.exceptions.NotFoundException;
 import MyCapstoneProject.capstone.payloads.ReservationDTO;
 import MyCapstoneProject.capstone.repositories.*;
@@ -44,14 +45,23 @@ public class ReservationService {
                 .orElseThrow(() -> new NotFoundException("Orario non trovato!!"));
 
         if (!room.getTimeSlots().contains(timeSlot)) {
-            throw new IllegalArgumentException("Questo orario non appartiene alla stanza selezionata!!");
+            throw new BadRequestException("Questo orario non appartiene alla stanza selezionata!!");
+        }
+
+        LocalDate today = LocalDate.now();
+        LocalDate limit = today.plusMonths(2);
+        if (date.isBefore(today)) {
+            throw new BadRequestException("La data selezionata è già passata!");
+        }
+        if (date.isAfter(limit)) {
+            throw new BadRequestException("Non è possibile prenotare oltre 2 mesi dalla data odierna!");
         }
 
         boolean exists = reservationRepo.existsByRoomAndDateAndTimeSlot(room, date, timeSlot);
         if (exists) {
             throw new RuntimeException("Questo orario non è disponibile per questa data!!");
         }
-        
+
         Reservation reservation = new Reservation(room, user, date, timeSlot);
         double amount = timeSlot.getPrice();
         Payment payment = new Payment(user, reservation, amount, StatusPayment.NOT_PAID);
@@ -106,7 +116,7 @@ public class ReservationService {
         return reservationRepo
                 .findByRoomIdAndDateBetween(roomId, from, to)
                 .stream()
-                .map(this::mapToDTO) // converte in DTO
+                .map(this::mapToDTO)
                 .toList();
     }
 }

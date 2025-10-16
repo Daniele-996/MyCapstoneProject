@@ -424,7 +424,7 @@ export const createReservation = ({ roomId, userId, date, timeSlotId }) => {
   return async (dispatch, getState) => {
     dispatch(reservationsRequest());
     const token = getState().auth.token;
-    if (!token) return;
+    if (!token) throw new Error("Utente non autenticato");
 
     try {
       const resp = await fetch(`${import.meta.env.VITE_API_URL}/reservations`, {
@@ -437,16 +437,17 @@ export const createReservation = ({ roomId, userId, date, timeSlotId }) => {
       });
 
       const data = await resp.json();
-      if (!resp.ok)
-        throw new Error(data.message || "Errore nella prenotazione");
+      if (!resp.ok) {
+        const message = data?.message || "Errore nella prenotazione";
+        throw new Error(message);
+      }
 
       const currentDate = getState().calendar.currentDate;
       await dispatch(fetchReservations(currentDate));
-
       return true;
     } catch (err) {
       dispatch(setError(err.message));
-      return false;
+      throw err;
     }
   };
 };

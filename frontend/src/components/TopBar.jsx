@@ -2,7 +2,7 @@ import { Navbar, Container, Button, Image } from "react-bootstrap";
 import logo from "../assets/logo.png";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { setLogout } from "../redux/actions";
+import { clearError, setLogout } from "../redux/actions";
 
 const TopBar = ({ toggleAside }) => {
   const navigate = useNavigate();
@@ -74,7 +74,8 @@ const TopBar = ({ toggleAside }) => {
                   localStorage.removeItem("token");
                   localStorage.removeItem("user");
                   dispatch(setLogout());
-                  navigate("/login");
+                  dispatch(clearError());
+                  setTimeout(() => navigate("/login"), 0);
                 }}
               >
                 Logout

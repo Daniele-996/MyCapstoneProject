@@ -9,7 +9,9 @@ import {
   Button,
   Alert,
   Card,
+  InputGroup,
 } from "react-bootstrap";
+import { Eye, EyeSlash } from "react-bootstrap-icons";
 import { useNavigate } from "react-router-dom";
 import registrazione from "../assets/registrazione.jpg";
 
@@ -23,10 +25,14 @@ const FormRegister = () => {
     lastName: "",
     email: "",
     password: "",
+    confirmPassword: "",
     phone: "",
   });
 
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
+
   const handleChange = (e) => {
     if (e.target.name === "phone") {
       const onlyNums = e.target.value.replace(/\D/g, "");
@@ -38,11 +44,17 @@ const FormRegister = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (form.password !== form.confirmPassword) {
+      alert("Le password non coincidono!");
+      return;
+    }
     const fixedForm = {
       ...form,
       phone: form.phone.startsWith("+39") ? form.phone : `+39${form.phone}`,
     };
-    const success = await dispatch(registerUser(fixedForm));
+    const payload = { ...fixedForm };
+    delete payload.confirmPassword;
+    const success = await dispatch(registerUser(payload));
     if (success) {
       setSuccessMsg("Benvenuto! Ora puoi effettuare il login!");
       setTimeout(() => navigate("/login"), 3000);
@@ -114,19 +126,52 @@ const FormRegister = () => {
 
                 <Form.Group className="mb-3">
                   <Form.Label>Password</Form.Label>
-                  <Form.Control
-                    type="password"
-                    name="password"
-                    placeholder="Inserisci la password"
-                    value={form.password}
-                    onChange={handleChange}
-                    required
-                    className="custom-input"
-                  />
+                  <InputGroup>
+                    <Form.Control
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      placeholder="Inserisci la password"
+                      value={form.password}
+                      onChange={handleChange}
+                      required
+                      className="custom-input"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline-light"
+                      onClick={() => setShowPassword((s) => !s)}
+                      aria-label={showPassword ? <EyeSlash /> : <Eye />}
+                    >
+                      {showPassword ? <EyeSlash /> : <Eye />}
+                    </Button>
+                  </InputGroup>
                   <Form.Text className="text-muted">
                     Almeno una maiuscola, una minuscola, un numero ed un
                     carattere speciale!
                   </Form.Text>
+                </Form.Group>
+
+                <Form.Group className="mb-3">
+                  <Form.Label>Conferma password</Form.Label>
+                  <InputGroup>
+                    <Form.Control
+                      type={showConfirmPassword ? "text" : "password"}
+                      name="confirmPassword"
+                      placeholder="Ripeti la password"
+                      value={form.confirmPassword}
+                      onChange={handleChange}
+                      required
+                      className="custom-input"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline-light"
+                      onClick={() => setShowConfirmPassword((s) => !s)}
+                      aria-label={showConfirmPassword ? <EyeSlash /> : <Eye />}
+                    >
+                      {showConfirmPassword ? <EyeSlash /> : <Eye />}
+                    </Button>
+                  </InputGroup>
                 </Form.Group>
 
                 <Form.Group className="mb-3">

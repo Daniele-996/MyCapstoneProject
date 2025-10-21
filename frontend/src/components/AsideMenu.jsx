@@ -1,11 +1,12 @@
 import { Offcanvas, Nav } from "react-bootstrap";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   Calendar3,
   Building,
   People,
   CreditCard,
   Book,
+  Person,
 } from "react-bootstrap-icons";
 
 const AsideMenu = ({ show, onHide }) => {
@@ -33,6 +34,9 @@ const AsideMenu = ({ show, onHide }) => {
         <Nav className="flex-column">
           {role === "ADMIN" && (
             <>
+              <Nav.Link onClick={() => navigate("/profile")}>
+                <Person className="me-2" /> Profilo
+              </Nav.Link>
               <Nav.Link onClick={() => navigate("/calendar")}>
                 <Calendar3 className="me-2" /> Calendario
               </Nav.Link>
@@ -50,6 +54,9 @@ const AsideMenu = ({ show, onHide }) => {
 
           {role === "USER" && (
             <>
+              <Nav.Link onClick={() => navigate("/profile")}>
+                <Person className="me-2" /> Profilo
+              </Nav.Link>
               <Nav.Link onClick={() => navigate("/calendar")}>
                 <Calendar3 className="me-2" /> Calendario
               </Nav.Link>

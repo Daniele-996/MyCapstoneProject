@@ -4,6 +4,7 @@ import {
   UPDATE_USER_ROLE,
   DELETE_USER,
   UPDATE_AVATAR,
+  UPDATE_USER_PROFILE,
 } from "../actions";
 
 const initialState = {
@@ -36,6 +37,15 @@ const userProfileReducer = (state = initialState, action) => {
       return {
         ...state,
         user: { ...state.user, avatarUrl: action.payload.avatarUrl },
+      };
+    case UPDATE_USER_PROFILE:
+      return {
+        ...state,
+        user:
+          state.user?.id === action.payload.id ? action.payload : state.user,
+        content: state.content.map((user) =>
+          user.id === action.payload.id ? action.payload : user
+        ),
       };
 
     default:

@@ -15,6 +15,7 @@ export const USER_PAYMENTS = "USER_PAYMENTS";
 export const RESERVATIONS_REQUEST = "RESERVATIONS_REQUEST";
 export const RESERVATIONS_SUCCESS = "RESERVATIONS_SUCCESS";
 export const RESERVATIONS_FAILURE = "RESERVATIONS_FAILURE";
+export const UPDATE_USER_PROFILE = "UPDATE_USER_PROFILE";
 
 //------------------------------ ACTION CREATORS ---------------------------------
 export const setRooms = (rooms) => ({ type: SET_ROOMS, payload: rooms });
@@ -67,6 +68,11 @@ export const updateAvatarAction = (user) => ({
 export const setUserPayments = (payments) => ({
   type: USER_PAYMENTS,
   payload: payments,
+});
+
+export const updateUserProfileAction = (user) => ({
+  type: UPDATE_USER_PROFILE,
+  payload: user,
 });
 
 //------------------------------ ALL FETCHS ---------------------------------
@@ -494,6 +500,45 @@ export const fetchUserProfile = () => {
       localStorage.setItem("user", JSON.stringify(data));
     } catch (err) {
       dispatch(setError(err.message));
+    }
+  };
+};
+
+export const updateUserProfile = (userId, payload) => {
+  return async (dispatch, getState) => {
+    dispatch(clearError());
+    const token = getState().auth?.token || localStorage.getItem("token");
+    if (!token) {
+      dispatch(setError("Utente non autenticato"));
+      return;
+    }
+
+    try {
+      const resp = await fetch(
+        `${import.meta.env.VITE_API_URL}/users/${userId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const data = await resp.json();
+
+      if (!resp.ok) {
+        throw new Error(data?.message || "Errore nell'aggiornamento profilo");
+      }
+
+      dispatch(updateUserProfileAction(data));
+      localStorage.setItem("user", JSON.stringify(data));
+
+      return true;
+    } catch (err) {
+      dispatch(setError(err.message));
+      return false;
     }
   };
 };

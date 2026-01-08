@@ -56,7 +56,7 @@ const TopBar = ({ toggleAside }) => {
                     onClick={() => navigate("/")}
                   />
                   <span className="text-light me-2">
-                    {user.firstName}, Welcome!!
+                    {user.firstName}, Welcome!
                   </span>
                 </div>
               )}

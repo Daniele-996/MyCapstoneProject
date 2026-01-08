@@ -59,7 +59,7 @@ public class ReservationService {
 
         boolean exists = reservationRepo.existsByRoomAndDateAndTimeSlot(room, date, timeSlot);
         if (exists) {
-            throw new RuntimeException("Questo orario non è disponibile per questa data!!");
+            throw new BadRequestException("Questo orario non è disponibile per questa data!!");
         }
 
         Reservation reservation = new Reservation(room, user, date, timeSlot);

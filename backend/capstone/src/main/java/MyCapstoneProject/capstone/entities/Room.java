@@ -17,7 +17,7 @@ public class Room {
     @Enumerated(EnumType.STRING)
     @Column(name = "orthopedic_bed")
     private OrthopedicBed orthopedicBed;
-    @OneToMany(mappedBy = "room", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TimeSlot> timeSlots = new ArrayList<>();
 
     public Room() {

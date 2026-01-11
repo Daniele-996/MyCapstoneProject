@@ -20,7 +20,7 @@ import java.util.List;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
-    
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JWTCheckerFilter jwtCheckerFilter) throws Exception {
         http.formLogin(AbstractHttpConfigurer::disable);
@@ -39,11 +39,9 @@ public class SecurityConfig {
         return http.build();
     }
 
-
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-
         config.setAllowedOrigins(List.of(
                 "http://localhost:5173",
                 "https://office-reservations-2026.netlify.app"

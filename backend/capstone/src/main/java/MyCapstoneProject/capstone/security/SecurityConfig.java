@@ -20,15 +20,9 @@ import java.util.List;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
-
-    private final JWTCheckerFilter jwtCheckerFilter;
-
-    public SecurityConfig(JWTCheckerFilter jwtCheckerFilter) {
-        this.jwtCheckerFilter = jwtCheckerFilter;
-    }
-
+    
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JWTCheckerFilter jwtCheckerFilter) throws Exception {
         http.formLogin(AbstractHttpConfigurer::disable);
         http.csrf(AbstractHttpConfigurer::disable);
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

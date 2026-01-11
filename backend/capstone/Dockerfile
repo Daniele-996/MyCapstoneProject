@@ -2,10 +2,10 @@
 FROM maven:3.9.9-eclipse-temurin-21 AS build
 WORKDIR /app
 
-COPY pom.xml .
+COPY backend/capstone/pom.xml ./pom.xml
 RUN mvn -q -DskipTests dependency:go-offline
 
-COPY src ./src
+COPY backend/capstone/src ./src
 RUN mvn -DskipTests clean package
 
 # ---- run stage ----

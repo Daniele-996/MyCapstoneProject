@@ -147,7 +147,7 @@ const FormRegister = () => {
                   </InputGroup>
                   <Form.Text className="text-muted">
                     Almeno una maiuscola, una minuscola, un numero ed un
-                    carattere speciale!
+                    carattere speciale "@!£%&"
                   </Form.Text>
                 </Form.Group>
 
